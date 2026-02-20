@@ -2,21 +2,26 @@ import React, { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
-const ProtectedRoute = ({ children }) => {
+// Added 'adminOnly' inside the parentheses to define it as a prop
+const ProtectedRoute = ({ children, adminOnly = false }) => {
     const { user, loading } = useContext(AuthContext);
 
-    if (loading) return <div>Loading...</div>;
+    // 1. Wait for the AuthContext to finish checking for a token
+    if (loading) {
+        return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
+    }
 
-    // If not logged in, go to login
+    // 2. If no user is found, redirect to login
     if (!user) {
         return <Navigate to="/login" />;
     }
 
-    // If logged in but NOT an admin, go back to Shop
-    if (user.role !== 'admin') {
+    // 3. Line 16: Check if the route is for admins only
+    if (adminOnly && user.role !== 'admin') {
         return <Navigate to="/" />;
     }
 
+    // 4. If all checks pass, render the protected page
     return children;
 };
 

@@ -18,6 +18,12 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        if (!passwordRegex.test(formData.password)) {
+            toast.error("Password must be at least 8 characters long and include both letters and numbers.");
+            return;
+        }
         
         // 1. Trigger the loading toast
         const loadingToast = toast.loading('Creating your account...');
@@ -46,7 +52,7 @@ const Register = () => {
             <div style={styles.card}>
                 <div style={styles.brandSection}>
                     <h2 style={styles.logo}>
-                        <span style={{color: '#0052cc'}}>Medi</span><span style={{color: '#ff6f61'}}>Sync</span>
+                        <span style={{color: '#24aeb1'}}>Medi</span><span style={{color: '#0d4642'}}>Sync</span>
                     </h2>
                     <p style={styles.subtitle}>Join our healthcare network</p>
                 </div>
@@ -133,23 +139,84 @@ const Register = () => {
     );
 };
 
+// ... existing imports
+
 const styles = {
-    container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f4f7f9' },
-    card: { backgroundColor: '#fff', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', width: '100%', maxWidth: '420px' },
-    brandSection: { textAlign: 'center', marginBottom: '30px' },
-    logo: { fontSize: '28px', fontWeight: 'bold', margin: 0 },
-    subtitle: { color: '#777', fontSize: '14px', marginTop: '5px' },
-    form: { display: 'flex', flexDirection: 'column', gap: '18px' },
-    inputGroup: { display: 'flex', flexDirection: 'column', gap: '5px' },
-    label: { fontSize: '13px', fontWeight: '700', color: '#444' },
-    input: { padding: '12px', borderRadius: '8px', border: '1px solid #ddd', outline: 'none', fontSize: '15px', boxSizing: 'border-box' },
+    container: { 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh', 
+        backgroundColor: '#f6f7fb',
+        padding: '20px'
+    },
+    card: { 
+        backgroundColor: '#fff', 
+        padding: '40px', 
+        borderRadius: '16px', 
+        boxShadow: '0 10px 40px rgba(0,0,0,0.08)', 
+        width: '100%', 
+        maxWidth: '440px' 
+    },
+    brandSection: { textAlign: 'center', marginBottom: '35px' },
+    logo: { 
+        fontSize: '30px', 
+        fontWeight: '900', 
+        margin: 0, 
+        color: '#242c44',
+        letterSpacing: '-1px'
+    },
+    subtitle: { 
+        color: '#6b7280', 
+        fontSize: '14px', 
+        marginTop: '8px',
+        fontWeight: '500' 
+    },
+    form: { display: 'flex', flexDirection: 'column', gap: '22px' },
+    inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
+    label: { 
+        fontSize: '12px', 
+        fontWeight: '700', 
+        color: '#242c44',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px'
+    },
+    input: { 
+        padding: '14px', 
+        borderRadius: '10px', 
+        border: '1px solid #e5e7eb', 
+        outline: 'none', 
+        fontSize: '15px', 
+        boxSizing: 'border-box',
+        backgroundColor: '#f9fafb'
+    },
     radioSection: { marginTop: '5px' },
-    radioGroup: { display: 'flex', gap: '20px', marginTop: '8px' },
-    radioLabel: { fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#555' },
-    radioInput: { accentColor: '#0052cc', width: '18px', height: '18px' },
+    radioGroup: { 
+        display: 'flex', 
+        gap: '20px', 
+        marginTop: '10px',
+        backgroundColor: '#f9fafb',
+        padding: '12px',
+        borderRadius: '10px',
+        border: '1px solid #e5e7eb'
+    },
+    radioLabel: { 
+        fontSize: '14px', 
+        cursor: 'pointer', 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '10px', 
+        color: '#4b5563',
+        fontWeight: '600'
+    },
+    radioInput: { 
+        accentColor: '#24aeb1', 
+        width: '18px', 
+        height: '18px' 
+    },
     eyeButton: {
         position: 'absolute',
-        right: '12px',
+        right: '15px',
         top: '50%',
         transform: 'translateY(-50%)',
         background: 'none',
@@ -157,12 +224,30 @@ const styles = {
         cursor: 'pointer',
         padding: '0',
         display: 'flex',
-        alignItems: 'center',
-        zIndex: 10
+        alignItems: 'center'
     },
-    button: { padding: '14px', backgroundColor: '#0052cc', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px', transition: 'background 0.3s' },
-    footerText: { textAlign: 'center', marginTop: '20px', fontSize: '14px', color: '#666' },
-    link: { color: '#ff6f61', textDecoration: 'none', fontWeight: 'bold' }
+    button: { 
+        padding: '16px', 
+        backgroundColor: '#24aeb1', // Netmeds Teal
+        color: 'white', 
+        border: 'none', 
+        borderRadius: '10px', 
+        fontWeight: '800', 
+        cursor: 'pointer', 
+        fontSize: '16px',
+        boxShadow: '0 4px 15px rgba(36, 174, 177, 0.3)',
+        transition: 'background 0.3s' 
+    },
+    footerText: { 
+        textAlign: 'center', 
+        marginTop: '25px', 
+        fontSize: '14px', 
+        color: '#6b7280' 
+    },
+    link: { 
+        color: '#24aeb1', 
+        textDecoration: 'none', 
+        fontWeight: '700' 
+    }
 };
-
 export default Register;

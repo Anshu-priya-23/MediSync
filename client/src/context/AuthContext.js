@@ -8,22 +8,33 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const role = localStorage.getItem('role');
-        if (token && role) {
-            setUser({ token, role });
+        // FIX: Look for the 'user' object instead of just 'role'
+        const savedUser = localStorage.getItem('user'); 
+        
+        if (token && savedUser) {
+            try {
+                // Parse the string back into an object so Profile.jsx can read it
+                setUser(JSON.parse(savedUser));
+            } catch (error) {
+                console.error("Session data corrupted", error);
+                localStorage.clear();
+            }
         }
         setLoading(false);
     }, []);
 
-    const login = (userData) => {
-        localStorage.setItem('token', userData.token);
-        localStorage.setItem('role', userData.role);
-        setUser({ token: userData.token, role: userData.role });
+    const login = (resData) => {
+        // Saves the token and the full user object (with name!)
+        localStorage.setItem('user', JSON.stringify(resData.user));
+        localStorage.setItem('token', resData.token);
+        
+        setUser(resData.user); // Triggers Profile button to show
     };
 
     const logout = () => {
+        // FIX: Remove 'user' instead of 'role' to match your login logic
         localStorage.removeItem('token');
-        localStorage.removeItem('role');
+        localStorage.removeItem('user'); 
         setUser(null);
     };
 
