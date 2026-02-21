@@ -16,7 +16,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Simplified request: Only sending email and password
+            // Sends email and password to the backend
             const res = await axios.post('http://localhost:5000/api/auth/login', { 
                 email, 
                 password 
@@ -24,16 +24,15 @@ const Login = () => {
             
             // Save user data (including the role from the DB) to global context
             login(res.data); 
-            res.data.user.role === 'admin' ? navigate('/dashboard') : navigate('/');
             
-            // SMART REDIRECTION
-            // We check the role returned by the server to decide where the user goes
+            // SMART REDIRECTION: Logic based on the role returned by the server
             if (res.data.user.role === 'admin') {
-                navigate('/dashboard'); // Pharmacist/Admin Command Center
+                navigate('/dashboard'); // Pharmacist view
             } else {
-                navigate('/'); // Patient/Customer Shop
+                navigate('/'); // Patient view
             }
         } catch (err) {
+            // Displays specific error messages from your authController
             alert("Login Failed: " + (err.response?.data?.message || "Server Error"));
         }
     };

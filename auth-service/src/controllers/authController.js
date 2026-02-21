@@ -7,12 +7,13 @@ exports.register = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
 
+        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Create new user (Hashed via Middleware in User.js)
+        // Create new user (Password is automatically hashed by our User.js model!)
         const newUser = new User({ name, email, password, role });
         await newUser.save();
 
@@ -22,37 +23,33 @@ exports.register = async (req, res) => {
     }
 };
 
-// 2. LOGIN API (Strict Role-Based Validation)
+// 2. LOGIN API (Streamlined for Smart Redirection)
+// Inside authController.js
 exports.login = async (req, res) => {
     try {
-        const { email, password, role } = req.body; // 'role' comes from the Radio Button
+        // Only get email and password; 'role' is no longer sent from UI
+        const { email, password } = req.body;
 
-        // Find the user by email
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: 'Account not found' });
         }
 
-        // ROLE INTEGRITY CHECK: Compare DB role with selected UI role
-        if (user.role !== role) {
-            return res.status(401).json({ 
-                message: `Access Denied: This account is a ${user.role}. You cannot login as ${role}.` 
-            });
-        }
+        // REMOVE the Role Integrity Check block that was here
+        // We don't compare roles anymore; we just fetch the role from the DB below
 
-        // Verify Password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Generate Token
         const token = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
 
+        // Send the role back so the frontend knows where to redirect
         res.status(200).json({
             message: 'Login successful',
             token,
