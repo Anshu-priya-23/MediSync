@@ -9,13 +9,15 @@ import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile'; 
 import About from './pages/About';
+// --- NEW IMPORTS ---
+import Checkout from './pages/Checkout';
+import PaymentPage from './pages/PaymentPage';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        {/* Global UI Elements */}
         <Navbar />
         <Toaster 
           position="top-center" 
@@ -36,7 +38,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Patient-Only Routes */}
+          {/* Patient-Only Routes (Keep protected for now) */}
           <Route 
             path="/profile" 
             element={
@@ -45,6 +47,11 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+          {/* --- NEW PAYMENT ROUTES (UNPROTECTED FOR DEMO) --- */}
+          {/* We removed <ProtectedRoute> so you can access these directly */}
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment" element={<PaymentPage />} />
 
           {/* Admin-Only Routes */}
           <Route 
@@ -56,7 +63,7 @@ function App() {
             } 
           />
 
-          {/* Fallback Catch-all: Redirects unknown URLs to Shop */}
+          {/* Fallback Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
