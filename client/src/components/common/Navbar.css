@@ -1,0 +1,93 @@
+.category-navbar {
+  background: #35b7a7;
+  padding: 18px 60px;
+}
+
+.category-container {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  align-items: center;
+}
+
+.category-item {
+  position: relative;
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-icon {
+  font-size: 16px;
+}
+
+/* ===== MEGA MENU ===== */
+.mega-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: none;
+
+  background: #f3f3f3;
+  padding: 25px 35px;
+  border-radius: 16px;
+
+  flex-direction: row;
+  gap: 60px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  z-index: 999;
+}
+
+.category-item:hover .mega-menu {
+  display: flex;
+}
+
+.menu-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== UNIFIED FONT STYLE ===== */
+.menu-column h4,
+.menu-column p,
+.dropdown-menu p {
+  font-family: "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 500;     /* SAME weight everywhere */
+  color: #333;
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+/* Hover effect same for all */
+.menu-column h4:hover,
+.menu-column p:hover,
+.dropdown-menu p:hover {
+  color: #35b7a7;
+}
+
+/* ===== SIMPLE DROPDOWN (All Categories) ===== */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: none;
+
+  background: #f3f3f3;
+  padding: 15px 20px;
+  border-radius: 12px;
+  min-width: 200px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  z-index: 999;
+}
+
+.category-item:hover .dropdown-menu {
+  display: block;
+}

@@ -1,13 +1,34 @@
-import React from 'react';
+import { useParams } from "react-router-dom";
+
+import HeroSection from "../components/homepage/HeroSection";
+import HealthConcerns from "../components/homepage/HealthConcerns";
+import PopularProducts from "../components/homepage/PopularProducts";
+import PopularBrands from "../components/homepage/PopularBrands";
+import Footer from "../components/homepage/Footer";   // ✅ Added
 
 const Shop = () => {
-    return (
-        <div style={{ padding: '100px', textAlign: 'center' }}>
-            <h1 style={{color: '#0052cc'}}>Welcome to MediSync</h1>
-            <p>Our Medicine Catalog is currently being updated by our inventory team.</p>
-            <p style={{color: '#666', fontSize: '14px'}}>(Member 2: Insert Inventory Grid Here)</p>
-        </div>
-    );
+  const { name } = useParams();
+
+  return (
+    <>
+      {!name ? (
+        <>
+          <HeroSection />
+          <HealthConcerns />
+          <PopularProducts />
+          <PopularBrands />
+          <Footer />   {/* ✅ Added */}
+        </>
+      ) : (
+        <>
+          <div style={{ padding: "40px" }}>
+            <h2>{name} Products</h2>
+          </div>
+          <Footer />   {/* ✅ Added */}
+        </>
+      )}
+    </>
+  );
 };
 
 export default Shop;

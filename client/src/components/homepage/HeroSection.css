@@ -1,0 +1,38 @@
+.hero-section {
+  background: linear-gradient(135deg, #0f3d3e, #1a9b8f);
+  padding: 60px 20px;
+  text-align: center;
+  color: white;
+}
+
+.hero-section h1 {
+  font-size: 42px;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+
+/* SEARCH BAR */
+.search-bar {
+  background: #f3f3f3;
+  width: 60%;
+  margin: 0 auto;
+  padding: 15px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 16px;
+}
+
+.search-icon {
+  font-size: 18px;
+  color: #1a9b8f;
+}

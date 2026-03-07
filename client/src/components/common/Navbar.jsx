@@ -1,80 +1,80 @@
-import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
-import { User } from 'lucide-react';
+import React from "react";
+import "./Navbar.css";
+import { FaBars, FaCapsules, FaSpa, FaLeaf, FaHeartbeat } from "react-icons/fa";
 
 const Navbar = () => {
-    const { user } = useContext(AuthContext);
-    
-    // State for hover effects
-    const [isProfileHovered, setIsProfileHovered] = useState(false);
-    const [isLoginHovered, setIsLoginHovered] = useState(false);
+  return (
+    <div className="category-navbar">
+      <div className="category-container">
 
-    const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : <User size={16} />;
+        {/* ALL CATEGORIES */}
+        <div className="category-item">
+          <FaBars className="nav-icon" />
+          All Categories
+          <div className="dropdown-menu">
+            <p>Baby Care</p>
+            <p>Medicine</p>
+            <p>Beauty</p>
+            <p>Wellness</p>
+            <p>Health Devices</p>
+          </div>
+        </div>
 
-    return (
-        <nav style={styles.nav}>
-            {/* Logo remains the anchor to the Shop page */}
-            <Link to="/" style={styles.logo}>
-                <span style={{color: '#242c44'}}>Medi</span><span style={{color: '#fff'}}>Sync</span>
-            </Link>
-
-            <div style={styles.navLinks}>
-                {user ? (
-                    <div style={styles.userSection}>
-                        {/* ADMIN LINK REMOVED FROM HERE
-                           Admins will now access their dashboard via the Profile sidebar
-                        */}
-                        <Link 
-                            to="/profile" 
-                            style={{
-                                ...styles.profileContainer,
-                                backgroundColor: isProfileHovered ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.15)'
-                            }}
-                            onMouseEnter={() => setIsProfileHovered(true)}
-                            onMouseLeave={() => setIsProfileHovered(false)}
-                        >
-                            <div style={styles.avatarCircle}>{userInitial}</div>
-                            <span style={styles.profileText}>Account</span>
-                        </Link>
-                    </div>
-                ) : (
-                    <Link 
-                        to="/login" 
-                        style={{
-                            ...styles.loginBtn,
-                            backgroundColor: isLoginHovered ? '#1a2033' : '#242c44'
-                        }}
-                        onMouseEnter={() => setIsLoginHovered(true)}
-                        onMouseLeave={() => setIsLoginHovered(false)}
-                    >
-                        Login / Register
-                    </Link>
-                )}
+        {/* Medicine */}
+        <div className="category-item">
+          <FaCapsules className="nav-icon" />
+          Medicine
+          <div className="mega-menu">
+            <div className="menu-column">
+              <h4>Health</h4>
+              <p>Tablets</p>
+              <p>Syrups</p>
             </div>
-        </nav>
-    );
-};
+          </div>
+        </div>
 
-const styles = {
-    nav: { 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '0.6rem 2.5rem', 
-        background: '#24aeb1', // Netmeds Teal
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000
-    },
-    logo: { fontSize: '1.5rem', fontWeight: '800', textDecoration: 'none' },
-    navLinks: { display: 'flex', alignItems: 'center' },
-    userSection: { display: 'flex', alignItems: 'center', gap: '15px' },
-    profileContainer: { display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', padding: '5px 12px', borderRadius: '25px', transition: '0.3s' },
-    avatarCircle: { width: '32px', height: '32px', background: '#242c44', color: '#fff', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '14px', fontWeight: 'bold', border: '2px solid rgba(255,255,255,0.3)' },
-    profileText: { color: '#fff', fontSize: '14px', fontWeight: '600' },
-    loginBtn: { padding: '8px 22px', color: '#fff', borderRadius: '25px', textDecoration: 'none', fontSize: '14px', fontWeight: '700', transition: '0.3s' }
+        {/* Beauty */}
+        <div className="category-item">
+          <FaSpa className="nav-icon" />
+          Beauty
+          <div className="mega-menu">
+            <div className="menu-column">
+              <h4>Skin Care</h4>
+              <p>Face Wash</p>
+              <p>Moisturizer</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Wellness */}
+        <div className="category-item">
+          <FaLeaf className="nav-icon" />
+          Wellness
+          <div className="mega-menu">
+            <div className="menu-column">
+              <h4>Fitness</h4>
+              <p>Protein</p>
+              <p>Vitamins</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Health Devices */}
+        <div className="category-item">
+          <FaHeartbeat className="nav-icon" />
+          Health Devices
+          <div className="mega-menu">
+            <div className="menu-column">
+              <h4>Devices</h4>
+              <p>Thermometer</p>
+              <p>BP Monitor</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
 };
 
 export default Navbar;

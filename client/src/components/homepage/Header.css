@@ -1,0 +1,82 @@
+.top-header {
+  background: #f3f3f3;
+  padding: 12px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* LEFT SECTION */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+/* LOGO FIXED PROPERLY */
+.logo {
+  height: 60px;         /* clean professional size */
+  width: auto;
+  object-fit: contain;
+}
+
+/* DELIVERY SECTION */
+.delivery-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.delivery-title {
+  font-size: 14px;
+  color: #333;
+}
+
+.delivery-select {
+  font-size: 16px;
+  font-weight: 600;
+  color: #35b7a7;
+  cursor: pointer;
+}
+
+/* RIGHT SECTION */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.cart {
+  position: relative;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: red;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border: 1px solid #35b7a7;
+  background: transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.login-btn:hover {
+  background: #35b7a7;
+  color: white;
+}
