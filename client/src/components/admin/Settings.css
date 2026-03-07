@@ -1,0 +1,160 @@
+/* ================= PAGE ================= */
+
+.settings-page {
+  padding: 30px;
+  font-family: "Segoe UI", sans-serif;
+  font-size:20px;
+  margin-top:-20px;
+}
+
+/* ================= CONTAINER ================= */
+
+.settings-container {
+  display: flex;
+  gap: 30px;
+}
+
+/* ================= LEFT MENU ================= */
+
+.settings-menu {
+  width: 260px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 10px;
+  transition: 0.2s ease;
+}
+
+.menu-item:hover {
+  background: #f3f4f6;
+}
+
+.menu-item.active {
+  background: #2cb1a5;
+  color: #ffffff;
+}
+
+/* ================= RIGHT CONTENT ================= */
+
+.settings-content {
+  flex: 1;
+}
+
+.settings-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.settings-card h3 {
+  margin-bottom: 25px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ================= FORM ================= */
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #374151;
+}
+
+input {
+  width: 95%;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+input:focus {
+  border-color: #2cb1a5;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(44, 177, 165, 0.15);
+}
+
+/* Profile two column layout */
+
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.form-row > div {
+  flex: 1;
+}
+
+/* ================= BUTTON ================= */
+
+.primary-btn {
+  background: #2cb1a5;
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 22px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.primary-btn:hover {
+  opacity: 0.9;
+}
+
+/* ================= CHECKBOX ROW ================= */
+
+.checkbox-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 14px;
+}
+
+.checkbox-row input {
+  width: 18px;
+  height: 18px;
+}
+
+/* ================= ROLE BOX ================= */
+
+.role-box {
+  background: #f9fafb;
+  padding: 18px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+  border: 1px solid #e5e7eb;
+}
+
+.role-box strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #111827;
+}
+
+.role-box p {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}

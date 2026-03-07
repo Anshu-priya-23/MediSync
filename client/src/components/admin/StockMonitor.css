@@ -1,0 +1,181 @@
+.stock-page {
+  padding: 30px;
+  font-size: 20px;
+  margin-top:-20px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.filters {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin: 20px 0;
+}
+
+select {
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 2px solid #d1d5db;
+  background: white;
+  font-size: 14px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #f3f4f6;
+  padding: 10px 16px;
+  border-radius: 25px;
+  gap: 10px;
+ border: 2px solid #d1d5db;
+ height:15px;
+ background-color: white;
+ 
+}
+
+.search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+}
+
+.table-container {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.InStock {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.LowStock {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.OutofStock {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+}
+
+.edit-icon {
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.edit-icon:hover {
+  color: #2cb1a5;
+}
+
+.delete-icon {
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.delete-icon:hover {
+  color: #ef4444;
+}
+/* ================= MODAL OVERLAY ================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+   background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  overflow-y: auto;   /* prevents overflow outside page */
+}
+
+/* ================= MODAL BOX ================= */
+.modal {
+  background: white;
+  width: 500px;
+  max-height: 90vh;   /* prevents going out of screen */
+  overflow-y: auto;   /* enables scroll inside modal */
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* ================= MODAL FORM ================= */
+.modal label {
+  display: block;
+  margin-top: 15px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.modal input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 14px;
+  border-radius: 15px;
+  border: 1px solid #d1d5db;
+  outline: none;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.cancel-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  background: white;
+  cursor: pointer;
+}
+
+.save-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  background: #2cb1a5;
+  color: white;
+  cursor: pointer;
+}
+
+.delete-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+}
+
+.delete-modal {
+  text-align: center;
+}
