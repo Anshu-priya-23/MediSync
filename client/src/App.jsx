@@ -9,9 +9,8 @@ import {
 
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-
-import Navbar from './components/common/Navbar';
-import Header from './components/homepage/Header';
+import About from './pages/About';
+import Navbar from './components/common/Navbar'; // Your integrated component
 
 import Shop from './pages/Shop';
 import Login from './pages/Login';
@@ -19,7 +18,6 @@ import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import SupplierDashboard from './pages/supplierDashboard';
 import Profile from './pages/Profile';
-import About from './pages/About';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -27,35 +25,23 @@ import { Toaster } from 'react-hot-toast';
 function Layout() {
   const location = useLocation();
 
-  // Hide header & navbar on supplier pages
+  // Hide Navbar on supplier pages for a clean dashboard view
   const hideLayout = location.pathname.startsWith("/supplier");
 
   return (
     <>
       {!hideLayout && (
-        <>
-          <div
-            style={{
-              position: "sticky",
-              top: 0,
-              zIndex: 1100,
-              background: "#fff"
-            }}
-          >
-            <Header />
-          </div>
-
-          <div
-            style={{
-              position: "sticky",
-              top: "80px",
-              zIndex: 1000,
-              background: "#fff"
-            }}
-          >
-            <Navbar />
-          </div>
-        </>
+        <div
+          style={{
+            position: "sticky",
+            top: 0, // Navbar now sticks to the very top
+            zIndex: 1100,
+            background: "#fff"
+          }}
+        >
+          {/* Header removed to fix the 'Double Navbar' issue */}
+          <Navbar /> 
+        </div>
       )}
 
       <Toaster
@@ -75,7 +61,7 @@ function Layout() {
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
+        
         <Route
           path="/profile"
           element={
@@ -99,6 +85,7 @@ function Layout() {
           element={<SupplierDashboard />}
         />
 
+        {/* Catch-all route to prevent 404s during the demo */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 
 export const AuthContext = createContext();
 
@@ -8,12 +8,11 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        // FIX: Look for the 'user' object instead of just 'role'
         const savedUser = localStorage.getItem('user'); 
         
         if (token && savedUser) {
             try {
-                // Parse the string back into an object so Profile.jsx can read it
+                // Parse the string back into an object so Navbar and Profile can read it
                 setUser(JSON.parse(savedUser));
             } catch (error) {
                 console.error("Session data corrupted", error);
@@ -24,15 +23,14 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (resData) => {
-        // Saves the token and the full user object (with name!)
+        // Saves the token and the full user object (including name)
         localStorage.setItem('user', JSON.stringify(resData.user));
         localStorage.setItem('token', resData.token);
         
-        setUser(resData.user); // Triggers Profile button to show
+        setUser(resData.user); // Triggers Navbar and Profile to update
     };
 
     const logout = () => {
-        // FIX: Remove 'user' instead of 'role' to match your login logic
         localStorage.removeItem('token');
         localStorage.removeItem('user'); 
         setUser(null);
@@ -43,4 +41,13 @@ export const AuthProvider = ({ children }) => {
             {!loading && children}
         </AuthContext.Provider>
     );
+};
+
+// --- THIS IS THE CRITICAL HOOK YOUR NAVBAR NEEDS ---
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error("useAuth must be used within an AuthProvider");
+    }
+    return context;
 };
