@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 import "./addMedicine.css";
+import { API_URL, IMAGE_URL } from "../../services/api";
+
 
 const AddMedicine = () => {
+  const { id } = useParams(); // ✅ get id for edit
 
   const [formData, setFormData] = useState({
     name: "",
@@ -16,27 +21,164 @@ const AddMedicine = () => {
     image: null,
   });
 
-  // ✅ DEFINE ACTIVE BUTTON STATE (THIS WAS MISSING)
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const [activeBtn, setActiveBtn] = useState(null);
+  const [preview, setPreview] = useState(null);
 
+  // =====================
+  // FETCH MEDICINE (EDIT MODE)
+  // =====================
+  useEffect(() => {
+    if (id) {
+      fetchMedicine();
+    }
+  }, [id]);
+
+  const fetchMedicine = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/medicines/${id}`);
+      const data = res.data;
+
+      setFormData({
+        name: data.name || "",
+        sku: data.sku || "",
+        category: data.category || "",
+        price: data.price || "",
+        stock: data.stock || "",
+        threshold: data.minThreshold || "",
+        expiry: data.expiryDate
+          ? data.expiryDate.split("T")[0]
+          : "",
+        batch: data.batchNumber || "",
+        description: data.description || "",
+        image: null,
+      });
+
+      if (data.image) {
+        setPreview(`${IMAGE_URL}/uploads/${data.image}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load medicine");
+    }
+  };
+
+  // =====================
+  // VALIDATION
+  // =====================
+  const validateForm = (data) => {
+    const err = {};
+
+    if (!data.name.trim()) err.name = "Medicine name is required";
+    if (!data.sku.trim()) err.sku = "SKU is required";
+    if (!data.category) err.category = "Category is required";
+
+    if (data.price === "" || Number(data.price) <= 0) {
+      err.price = "Enter valid price";
+    }
+
+    if (data.stock === "" || Number(data.stock) < 0) {
+      err.stock = "Enter valid stock quantity";
+    }
+
+    return err;
+  };
+
+  // =====================
+  // HANDLE CHANGE
+  // =====================
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
     if (name === "image") {
-      setFormData({ ...formData, image: files[0] });
+      const file = files[0];
+      setFormData({ ...formData, image: file });
+
+      if (file) {
+        setPreview(URL.createObjectURL(file));
+      }
     } else {
       setFormData({ ...formData, [name]: value });
+
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
     }
   };
 
-  const handleSubmit = (e) => {
+  // =====================
+  // SUBMIT (CREATE + UPDATE)
+  // =====================
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setActiveBtn("save");   // highlight save
-    console.log(formData);
+    setActiveBtn("save");
+
+    const validationErrors = validateForm(formData);
+
+    if (Object.values(validationErrors).some((e) => e)) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setErrors({});
+
+      const form = new FormData();
+
+      form.append("name", formData.name);
+      form.append("sku", formData.sku);
+      form.append("category", formData.category);
+      form.append("price", formData.price);
+      form.append("stock", formData.stock);
+      form.append("minThreshold", formData.threshold);
+      form.append("expiryDate", formData.expiry);
+      form.append("batchNumber", formData.batch);
+      form.append("description", formData.description);
+      form.append("supplierId","661111111111111111111111");
+
+      if (formData.image) {
+        form.append("image", formData.image);
+      }
+
+      let res;
+
+      if (id) {
+        // ✅ UPDATE
+        res = await axios.put(`${API_URL}/medicines/${id}`, form, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        // ✅ CREATE
+        res = await axios.post(`${API_URL}/medicines`, form, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+
+      console.log(res.data);
+
+      alert(
+        id
+          ? "Medicine updated successfully ✅"
+          : "Medicine added successfully ✅"
+      );
+
+      handleCancel();
+
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // =====================
+  // RESET
+  // =====================
   const handleCancel = () => {
-    setActiveBtn("cancel"); // highlight cancel
+    setActiveBtn("cancel");
     setFormData({
       name: "",
       sku: "",
@@ -49,14 +191,20 @@ const AddMedicine = () => {
       description: "",
       image: null,
     });
+    setErrors({});
+    setPreview(null);
   };
 
   return (
     <>
       <div className="add-page-header">
-        <h1 className="add-page-title">Add Medicine</h1>
+        <h1 className="add-page-title">
+          {id ? "Edit Medicine" : "Add Medicine"}
+        </h1>
         <p className="add-page-subtitle">
-          Add a new medicine to your inventory
+          {id
+            ? "Update medicine details"
+            : "Add a new medicine to your inventory"}
         </p>
       </div>
 
@@ -64,78 +212,98 @@ const AddMedicine = () => {
         <form onSubmit={handleSubmit}>
           <div className="add-form-grid">
 
+            {/* NAME */}
             <div>
-              <label className="add-label">Medicine Name</label>
               <input
                 type="text"
                 name="name"
-                className="add-input"
+                placeholder="Medicine Name"
+                className={`add-input ${errors.name ? "input-error" : ""}`}
                 value={formData.name}
                 onChange={handleChange}
               />
+              {errors.name && <p className="error-text">{errors.name}</p>}
             </div>
 
+            {/* SKU */}
             <div>
-              <label className="add-label">SKU Code</label>
               <input
                 type="text"
                 name="sku"
-                className="add-input"
+                placeholder="SKU"
+                className={`add-input ${errors.sku ? "input-error" : ""}`}
                 value={formData.sku}
                 onChange={handleChange}
               />
+              {errors.sku && <p className="error-text">{errors.sku}</p>}
             </div>
 
+            {/* CATEGORY */}
             <div>
-              <label className="add-label">Category</label>
               <select
                 name="category"
-                className="add-select"
+                className={`add-select ${errors.category ? "input-error" : ""}`}
                 value={formData.category}
                 onChange={handleChange}
               >
                 <option value="">Select category</option>
-                <option value="Tablet">Tablet</option>
-                <option value="Syrup">Syrup</option>
-                <option value="Injection">Injection</option>
+                <option value="baby-care">Baby Care</option>
+                <option value="medicine">Medicine</option>
+                <option value="beauty">Beauty</option>
+                <option value="wellness">Wellness</option>
+                <option value="health-devices">Health Devices</option>
+                <option value="diabetes">Diabetes Care</option>
+                <option value="heart-care">Heart Care</option>
+                <option value="stomach-care">Stomach Care</option>
+                <option value="liver-care">Liver Care</option>
+                <option value="bone-joint-muscle-care">Bone & Joint Care</option>
+                <option value="kidney-care">Kidney Care</option>
+                <option value="derma-care">Derma Care</option>
+                <option value="respiratory-care">Respiratory Care</option>
               </select>
+              {errors.category && <p className="error-text">{errors.category}</p>}
             </div>
 
+            {/* PRICE */}
             <div>
-              <label className="add-label">Price ($)</label>
               <input
                 type="number"
                 name="price"
-                className="add-input"
+                placeholder="Price"
+                className={`add-input ${errors.price ? "input-error" : ""}`}
                 value={formData.price}
                 onChange={handleChange}
               />
+              {errors.price && <p className="error-text">{errors.price}</p>}
             </div>
 
+            {/* STOCK */}
             <div>
-              <label className="add-label">Stock Quantity</label>
               <input
                 type="number"
                 name="stock"
-                className="add-input"
+                placeholder="Stock Quantity"
+                className={`add-input ${errors.stock ? "input-error" : ""}`}
                 value={formData.stock}
                 onChange={handleChange}
               />
+              {errors.stock && <p className="error-text">{errors.stock}</p>}
             </div>
 
+            {/* THRESHOLD */}
             <div>
-              <label className="add-label">Minimum Threshold</label>
               <input
                 type="number"
                 name="threshold"
+                placeholder="Min Threshold"
                 className="add-input"
                 value={formData.threshold}
                 onChange={handleChange}
               />
             </div>
 
+            {/* EXPIRY */}
             <div>
-              <label className="add-label">Expiry Date</label>
               <input
                 type="date"
                 name="expiry"
@@ -145,35 +313,38 @@ const AddMedicine = () => {
               />
             </div>
 
+            {/* BATCH */}
             <div>
-              <label className="add-label">Batch Number</label>
               <input
                 type="text"
                 name="batch"
+                placeholder="Batch Number"
                 className="add-input"
                 value={formData.batch}
                 onChange={handleChange}
               />
             </div>
 
+            {/* DESCRIPTION */}
             <div className="add-full-width">
-              <label className="add-label">Description</label>
               <textarea
                 name="description"
+                placeholder="Description"
                 className="add-textarea"
                 value={formData.description}
                 onChange={handleChange}
               />
             </div>
 
+            {/* IMAGE */}
             <div className="add-full-width">
-              <label className="add-label">Image Upload</label>
               <input
                 type="file"
                 name="image"
                 className="add-input"
                 onChange={handleChange}
               />
+              {preview && <img src={preview} width="100" />}
             </div>
 
           </div>
@@ -182,19 +353,25 @@ const AddMedicine = () => {
             <button
               type="button"
               onClick={handleCancel}
-              className={`add-btn-cancel ${activeBtn === "cancel" ? "active-btn" : ""}`}
+              className={`add-btn-cancel ${activeBtn === "cancel" ? "active-btn" : ""
+                }`}
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className={`add-btn-save ${activeBtn === "save" ? "active-btn" : ""}`}
+              disabled={loading}
+              className={`add-btn-save ${activeBtn === "save" ? "active-btn" : ""
+                }`}
             >
-              Save Medicine
+              {loading
+                ? "Saving..."
+                : id
+                  ? "Update Medicine"
+                  : "Save Medicine"}
             </button>
           </div>
-
         </form>
       </div>
     </>

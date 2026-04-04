@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom"; // Added for routing
 import "./Navbar.css";
 import { FaBars, FaCapsules, FaSpa, FaLeaf, FaHeartbeat } from "react-icons/fa";
 
@@ -12,65 +13,49 @@ const Navbar = () => {
           <FaBars className="nav-icon" />
           All Categories
           <div className="dropdown-menu">
-            <p>Baby Care</p>
-            <p>Medicine</p>
-            <p>Beauty</p>
-            <p>Wellness</p>
-            <p>Health Devices</p>
+            {/* Wrapped dropdown items in Links */}
+            <Link to="/category/baby-care" style={{ textDecoration: 'none' }}>
+              <p>Baby Care</p>
+            </Link>
+            <Link to="/category/medicine" style={{ textDecoration: 'none' }}>
+              <p>Medicine</p>
+            </Link>
+            <Link to="/category/beauty" style={{ textDecoration: 'none' }}>
+              <p>Beauty</p>
+            </Link>
+            <Link to="/category/wellness" style={{ textDecoration: 'none' }}>
+              <p>Wellness</p>
+            </Link>
+            <Link to="/category/health-devices" style={{ textDecoration: 'none' }}>
+              <p>Health Devices</p>
+            </Link>
           </div>
         </div>
 
         {/* Medicine */}
-        <div className="category-item">
+        {/* Changed from <div> to <Link> and added 'to' prop */}
+        <Link to="/category/medicine" className="category-item" style={{ textDecoration: 'none' }}>
           <FaCapsules className="nav-icon" />
           Medicine
-          <div className="mega-menu">
-            <div className="menu-column">
-              <h4>Health</h4>
-              <p>Tablets</p>
-              <p>Syrups</p>
-            </div>
-          </div>
-        </div>
+        </Link>
 
         {/* Beauty */}
-        <div className="category-item">
+        <Link to="/category/beauty" className="category-item" style={{ textDecoration: 'none' }}>
           <FaSpa className="nav-icon" />
           Beauty
-          <div className="mega-menu">
-            <div className="menu-column">
-              <h4>Skin Care</h4>
-              <p>Face Wash</p>
-              <p>Moisturizer</p>
-            </div>
-          </div>
-        </div>
+        </Link>
 
         {/* Wellness */}
-        <div className="category-item">
+        <Link to="/category/wellness" className="category-item" style={{ textDecoration: 'none' }}>
           <FaLeaf className="nav-icon" />
           Wellness
-          <div className="mega-menu">
-            <div className="menu-column">
-              <h4>Fitness</h4>
-              <p>Protein</p>
-              <p>Vitamins</p>
-            </div>
-          </div>
-        </div>
+        </Link>
 
         {/* Health Devices */}
-        <div className="category-item">
+        <Link to="/category/health-devices" className="category-item" style={{ textDecoration: 'none' }}>
           <FaHeartbeat className="nav-icon" />
           Health Devices
-          <div className="mega-menu">
-            <div className="menu-column">
-              <h4>Devices</h4>
-              <p>Thermometer</p>
-              <p>BP Monitor</p>
-            </div>
-          </div>
-        </div>
+        </Link>
 
       </div>
     </div>

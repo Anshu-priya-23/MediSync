@@ -44,11 +44,11 @@ const SupplierSidebar = () => {
       path: "/supplier-dashboard/orders",
       icon: <ShoppingCart size={18} />
     },
-    {
-      name: "Performance",
-      path: "/supplier-dashboard/performance",
-      icon: <BarChart3 size={18} />
-    },
+    // {
+    //   name: "Performance",
+    //   path: "/supplier-dashboard/performance",
+    //   icon: <BarChart3 size={18} />
+    // },
     {
       name: "Profile",
       path: "/supplier-dashboard/profile",

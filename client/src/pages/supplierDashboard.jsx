@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import SupplierSidebar from "../components/supplier/SupplierSidebar";
@@ -10,8 +10,44 @@ import Orders from "../components/supplier/Orders";   // ✅ ADD THIS
 import Performance from "../components/supplier/performance";
 import "../components/supplier/supplier.css";
 import Profile from "../components/supplier/profile";
+import inventoryService from "../services/inventoryService"; // Adjust path
+
 /* ---------------- Dashboard Home ---------------- */
 const DashboardHome = () => {
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    totalBought: 0,
+    totalReturned: 0,
+    totalCancelled: 0
+  });
+  const [medicineCount, setMedicineCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const supplierId = "661111111111111111111111";
+
+  useEffect(() => {
+    const fetchAllDashboardData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetching both APIs in parallel for better performance
+        const [statsData, countData] = await Promise.all([
+          inventoryService.getSupplierStats(supplierId),
+          inventoryService.getMedicineCount(supplierId)
+        ]);
+
+        setStats(statsData);
+        setMedicineCount(countData.totalMedicines);
+      } catch (error) {
+        console.error("Failed to load dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllDashboardData();
+  }, [supplierId]);
+
   return (
     <>
       <div className="dashboard-header">
@@ -22,23 +58,41 @@ const DashboardHome = () => {
       </div>
 
       <section className="stats-wrapper">
-        <StatCard title="Medicines Listed" value="34" subtitle="↑ +3 this month" />
-        <StatCard title="Total Orders" value="156" />
-        <StatCard title="Total Bought" value="1325" subtitle="↑ +8%" />
-        <StatCard title="Total Returned" value="35" />
-        <StatCard title="Total Cancelled" value="85" />
+        {/* Now Dynamic: Medicines Listed */}
+        <StatCard
+          title="Medicines Listed"
+          value={loading ? "..." : medicineCount}
+          subtitle="In your inventory"
+        />
+
+        <StatCard
+          title="Total Orders"
+          value={loading ? "..." : stats.totalOrders}
+        />
+        <StatCard
+          title="Total Bought"
+          value={loading ? "..." : stats.totalBought}
+          subtitle="Total Units"
+        />
+        <StatCard
+          title="Total Returned"
+          value={loading ? "..." : stats.totalReturned}
+        />
+        <StatCard
+          title="Total Cancelled"
+          value={loading ? "..." : stats.totalCancelled}
+        />
       </section>
 
-      <section className="chart-box">
+      {/* <section className="chart-box">
         <h3 className="chart-title">
           Buy vs Return vs Cancelled
         </h3>
-        <BuyReturnChart />
-      </section>
+        <BuyReturnChart data={stats} />
+      </section> */}
     </>
   );
 };
-
 /* ---------------- Main Layout ---------------- */
 const SupplierDashboard = () => {
   return (

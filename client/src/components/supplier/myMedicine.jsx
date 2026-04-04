@@ -1,44 +1,52 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Pencil, Trash2, Package, Plus, X } from "lucide-react";
 import "./myMedicine.css";
+import { API_URL } from "../../services/api";
+
 
 const MyMedicine = () => {
   const navigate = useNavigate();
 
-  const [medicines, setMedicines] = useState([
-    { id: 1, name: "Amoxicillin 500mg", category: "Antibiotics", price: 12.5, stock: 450 },
-    { id: 2, name: "Metformin 850mg", category: "Diabetes", price: 6.75, stock: 0 },
-    { id: 3, name: "Omeprazole 20mg", category: "Antibiotics", price: 11.0, stock: 120 },
-  ]);
+  const [medicines, setMedicines] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [showModal, setShowModal] = useState(false);
-  const [selectedMedicine, setSelectedMedicine] = useState(null);
-  const [newStock, setNewStock] = useState("");
-
-  // Delete
-  const handleDelete = (id) => {
-    setMedicines(medicines.filter((med) => med.id !== id));
+  // =====================
+  // FETCH MEDICINES
+  // =====================
+  const fetchMedicines = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_URL}/medicines`);
+      setMedicines(res.data);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to fetch medicines");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Open Modal
-  const openStockModal = (med) => {
-    setSelectedMedicine(med);
-    setNewStock(med.stock);
-    setShowModal(true);
+  useEffect(() => {
+    fetchMedicines();
+  }, []);
+
+  // =====================
+  // DELETE
+  // =====================
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete?")) return;
+
+    try {
+      await axios.delete(`${API_URL}/medicines/${id}`);
+      setMedicines((prev) => prev.filter((med) => med._id !== id));
+    } catch (error) {
+      console.error(error);
+      alert("Delete failed");
+    }
   };
 
-  // Update Stock
-  const handleUpdateStock = () => {
-    setMedicines(
-      medicines.map((med) =>
-        med.id === selectedMedicine.id
-          ? { ...med, stock: Number(newStock) }
-          : med
-      )
-    );
-    setShowModal(false);
-  };
 
   return (
     <>
@@ -52,94 +60,65 @@ const MyMedicine = () => {
 
         <button
           className="add-medicine-btn"
-          onClick={() =>
-            navigate("/supplier-dashboard/add-medicine")
-          }
+          onClick={() => navigate("/supplier-dashboard/add-medicine/")}
         >
           <Plus size={16} />
           Add Medicine
         </button>
       </div>
 
+      {/* ================= TABLE ================= */}
       <div className="medicine-table">
         <div className="table-header">
-          <span>Medicine Name</span>
+          <span>Name</span>
           <span>Category</span>
           <span>Price</span>
           <span>Stock</span>
           <span>Actions</span>
         </div>
 
-        {medicines.map((med) => (
-          <div key={med.id} className="table-row">
-            <span>{med.name}</span>
-            <span>{med.category}</span>
-            <span>${med.price.toFixed(2)}</span>
-            <span>{med.stock}</span>
+        {loading ? (
+          <p>Loading...</p>
+        ) : medicines.length === 0 ? (
+          <p>No medicines found</p>
+        ) : (
+          medicines.map((med) => (
+            <div key={med._id} className="table-row">
+              <span>{med.name}</span>
+              <span>{med.category}</span>
+              <span>₹{med.price}</span>
 
-            <span className="table-actions">
-              <Pencil
-                size={18}
-                className="action-icon"
-                onClick={() =>
-                  navigate("/supplier-dashboard/add-medicine")
-                }
-              />
+              <span
+                style={{
+                  color: med.stock === 0 ? "red" : "inherit",
+                  fontWeight: med.stock === 0 ? "bold" : "normal",
+                }}
+              >
+                {med.stock}
+              </span>
 
-              <Package
-                size={18}
-                className="action-icon"
-                onClick={() => openStockModal(med)}
-              />
+              <span className="table-actions">
+                {/* EDIT */}
+                <Pencil
+                  size={18}
+                  className="action-icon"
+                  onClick={() =>
+                    navigate(`/supplier-dashboard/add-medicine/${med._id}`)
+                  }
+                />
 
-              <Trash2
-                size={18}
-                className="action-icon delete-icon"
-                onClick={() => handleDelete(med.id)}
-              />
-            </span>
-          </div>
-        ))}
+                {/* DELETE */}
+                <Trash2
+                  size={18}
+                  className="action-icon delete-icon"
+                  onClick={() => handleDelete(med._id)}
+                />
+              </span>
+            </div>
+          ))
+        )}
       </div>
 
-      {/* ================= MODAL ================= */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal-header">
-              <h2>Update Stock</h2>
-              <X
-                size={20}
-                className="close-icon"
-                onClick={() => setShowModal(false)}
-              />
-            </div>
-
-            <label>New Stock Quantity</label>
-            <input
-              type="number"
-              value={newStock}
-              onChange={(e) => setNewStock(e.target.value)}
-            />
-
-            <div className="modal-actions">
-              <button
-                className="modal-cancel"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-
-              <button
-                className="modal-update"
-                onClick={handleUpdateStock}
-              >
-                Update
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

@@ -16,7 +16,7 @@ const Shop = () => {
           <HeroSection />
           <HealthConcerns />
           <PopularProducts />
-          <PopularBrands />
+          {/* <PopularBrands /> */}
           <Footer />   {/* ✅ Added */}
         </>
       ) : (

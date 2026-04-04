@@ -1,90 +1,86 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./orders.css";
+import inventoryService from "../../services/inventoryService";
 
 const Orders = () => {
-  const orders = [
-    {
-      id: "ORD-001",
-      medicine: "Amoxicillin 500mg",
-      qty: 200,
-      returned: 5,
-      cancelled: 0,
-      date: "2026-02-10",
-      status: "Completed",
-    },
-    {
-      id: "ORD-002",
-      medicine: "Ibuprofen 400mg",
-      qty: 150,
-      returned: 0,
-      cancelled: 10,
-      date: "2026-02-12",
-      status: "Completed",
-    },
-    {
-      id: "ORD-003",
-      medicine: "Vitamin D3 1000IU",
-      qty: 100,
-      returned: 20,
-      cancelled: 0,
-      date: "2026-02-15",
-      status: "Returned",
-    },
-    {
-      id: "ORD-004",
-      medicine: "Atorvastatin 20mg",
-      qty: 75,
-      returned: 0,
-      cancelled: 75,
-      date: "2026-02-18",
-      status: "Cancelled",
-    },
-    {
-      id: "ORD-005",
-      medicine: "Paracetamol 650mg",
-      qty: 500,
-      returned: 0,
-      cancelled: 0,
-      date: "2026-02-20",
-      status: "Processing",
-    },
-  ];
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Supplier ID used for the API call
+  const supplierId = "661111111111111111111111";
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const data = await inventoryService.getSupplierOrders(supplierId);
+        // Ensure data is an array before setting state
+        setOrders(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to fetch orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (supplierId) {
+      fetchOrders();
+    }
+  }, [supplierId]);
+
+  if (loading) return <div className="loading">Loading orders...</div>;
 
   return (
     <>
       <div className="dashboard-header">
-        <h1 className="dashboard-title">Orders</h1>
-        <p className="dashboard-subtitle">
-          View your order history and status
-        </p>
+        <h1 className="dashboard-title">Supplier Orders</h1>
+        <p className="dashboard-subtitle">Manage incoming medicine requests</p>
       </div>
 
       <div className="orders-table">
         <div className="orders-header">
           <span>Order ID</span>
+          <span>Customer</span>
           <span>Medicine</span>
-          <span>Qty Bought</span>
-          <span>Returned</span>
-          <span>Cancelled</span>
-          <span>Order Date</span>
+          <span>Qty</span>
+          <span>Price</span>
+          <span>Total</span>
           <span>Status</span>
         </div>
 
-        {orders.map((order, index) => (
-          <div key={index} className="orders-row">
-            <span className="order-id">{order.id}</span>
-            <span>{order.medicine}</span>
-            <span>{order.qty}</span>
-            <span className="returned">{order.returned}</span>
-            <span className="cancelled">{order.cancelled}</span>
-            <span>{order.date}</span>
-            <span>
-              <span className={`status-badge ${order.status.toLowerCase()}`}>
-                {order.status}
-              </span>
-            </span>
+        {orders.length === 0 ? (
+          <div className="no-orders" style={{ padding: "20px", textAlign: "center" }}>
+            No orders found for this supplier.
           </div>
-        ))}
+        ) : (
+          orders.map((order) =>
+            // Each order contains an array of medicines
+            order.medicines.map((med, index) => (
+              <div key={`${order._id}-${index}`} className="orders-row">
+                {/* 1. Extract Order ID from the parent 'order' object */}
+                <span className="order-id">
+                  {order._id.substring(order._id.length - 8).toUpperCase()}
+                </span>
+
+                {/* 2. Extract Customer Name from the parent 'order' object */}
+                <span>{order.customerName || "N/A"}</span>
+
+                {/* 3. Medicine details come from the 'med' object inside the array */}
+                <span className="medicine-name"><strong>{med.name}</strong></span>
+                <span>{med.quantity}</span>
+                <span>₹{med.price}</span>
+
+                {/* 4. Total Amount and Status come from the parent 'order' object */}
+                <span>₹{order.totalAmount}</span>
+                <span>
+                  <span className={`status-badge ${(order.status || "Pending").toLowerCase()}`}>
+                    {order.status || "Pending"}
+                  </span>
+                </span>
+              </div>
+            ))
+          )
+        )}
       </div>
     </>
   );
