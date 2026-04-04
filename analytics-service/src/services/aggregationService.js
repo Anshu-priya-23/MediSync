@@ -9,7 +9,7 @@ export const getDashboardData = async () => {
 
     // ✅ SAFE FETCH INVENTORY
     try {
-      const res = await axios.get("http://localhost:5002/api/inventory");
+      const res = await axios.get("http://localhost:5002/api/medicines");
       inventory = Array.isArray(res.data) ? res.data : [];
     } catch {
       console.log("⚠️ Inventory API not available");

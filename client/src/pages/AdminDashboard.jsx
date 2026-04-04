@@ -11,10 +11,10 @@ import {
 } from "react-icons/fi";
 
 import Dashboard from "../components/admin/Dashboard";
-import StockMonitor from "../components/admin/stockMonitor";
+import StockMonitor from "../components/admin/StockMonitor";
 import SupplierManagement from "../components/admin/SupplierManagement";
 import Reports from "../components/admin/Reports";
-import Settings from "../components/admin/settings";
+import Settings from "../components/admin/Settings";
 
 import "./AdminDashboard.css";
 
