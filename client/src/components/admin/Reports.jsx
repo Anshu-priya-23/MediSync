@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./Reports.css";
 import {
   BarChart,
@@ -12,91 +12,117 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
+import axios from "axios";
+
+const API = "http://localhost:5005/api/analytics/reports";
 
 const Reports = () => {
-  const supplierData = [
-    { name: "PharmaCorp", orders: 150 },
-    { name: "MedSupply", orders: 120 },
-    { name: "HealthFirst", orders: 190 },
-    { name: "CureAll", orders: 40 },
-  ];
+  const [data, setData] = useState(null);
 
-  const monthlyData = [
-    { month: "Sep", stock: 1200, orders: 350 },
-    { month: "Oct", stock: 1300, orders: 400 },
-    { month: "Nov", stock: 1050, orders: 360 },
-    { month: "Dec", stock: 1450, orders: 480 },
-    { month: "Jan", stock: 1350, orders: 420 },
-    { month: "Feb", stock: 1800, orders: 470 },
-  ];
+  const fetchReports = async () => {
+    try {
+      const res = await axios.get(API);
+      setData(res.data);
+    } catch (err) {
+      console.error("Reports Error:", err);
+      setData({
+        totalSales: 0,
+        totalOrders: 0,
+        totalCancelled: 0,
+        supplierData: [],
+        monthlyData: []
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+    const interval = setInterval(fetchReports, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!data) return <h2>Loading...</h2>;
+
+  // ✅ SAFE DATA
+  const supplierData = data.supplierData || [];
+  const monthlyData = data.monthlyData || [];
 
   return (
     <div className="reports-page">
+
       {/* Header */}
       <div className="reports-header">
-        <div>
-          <h2>Reports</h2>
-          
-        </div>
-        <button className="export-btn">Export Report</button>
+        <h2>Reports</h2>
       </div>
 
-      {/* Summary Cards */}
+      {/* 🔥 SUMMARY CARDS */}
       <div className="summary-cards">
+
         <div className="card">
-          <p>Total Buy Value</p>
-          <h3>$124,500</h3>
+          <p>Total Sales</p>
+          <h3>${data.totalSales || 0}</h3>
         </div>
+
         <div className="card">
-          <p>Total Returns</p>
-          <h3 className="orange">$8,320</h3>
+          <p>Total Orders</p>
+          <h3 className="orange">{data.totalOrders || 0}</h3>
         </div>
+
         <div className="card">
-          <p>Total Cancelled</p>
-          <h3 className="red">$5,150</h3>
+          <p>Cancelled Orders</p>
+          <h3 className="red">{data.totalCancelled || 0}</h3>
         </div>
+
       </div>
 
-      {/* Charts */}
+      {/* 🔥 CHARTS */}
       <div className="charts-grid">
-        {/* Bar Chart */}
+
+        {/* Supplier Performance */}
         <div className="chart-card">
-          <h4>Supplier Orders</h4>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={supplierData}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="orders" fill="#2cb1a5" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <h4>Supplier Performance</h4>
+
+          {supplierData.length === 0 ? (
+            <p>No data available</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={supplierData}>
+                <XAxis dataKey="supplier" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="total" fill="#2cb1a5" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
-        {/* Line Chart */}
+        {/* Monthly Sales */}
         <div className="chart-card">
-          <h4>Monthly Inventory Trend</h4>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="stock"
-                stroke="#2cb1a5"
-                strokeWidth={3}
-              />
-              <Line
-                type="monotone"
-                dataKey="orders"
-                stroke="#f59e0b"
-                strokeWidth={3}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <h4>Monthly Sales</h4>
+
+          {monthlyData.length === 0 ? (
+            <p>No data available</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#2cb1a5"
+                  strokeWidth={3}
+                />
+
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
+
       </div>
     </div>
   );

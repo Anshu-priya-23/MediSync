@@ -1,21 +1,19 @@
 /* ================= PAGE ================= */
-
 .settings-page {
   padding: 30px;
   font-family: "Segoe UI", sans-serif;
-  font-size:20px;
-  margin-top:-20px;
+  font-size: 20px;
+  margin-top: -20px;
 }
 
 /* ================= CONTAINER ================= */
-
 .settings-container {
   display: flex;
   gap: 30px;
+  flex-wrap: wrap; /* responsive only */
 }
 
 /* ================= LEFT MENU ================= */
-
 .settings-menu {
   width: 260px;
   background: #ffffff;
@@ -47,9 +45,9 @@
 }
 
 /* ================= RIGHT CONTENT ================= */
-
 .settings-content {
   flex: 1;
+  min-width: 300px;
 }
 
 .settings-card {
@@ -67,7 +65,6 @@
 }
 
 /* ================= FORM ================= */
-
 label {
   display: block;
   margin-bottom: 6px;
@@ -76,7 +73,7 @@ label {
 }
 
 input {
-  width: 95%;
+  width: 100%; /* only fix alignment */
   padding: 12px 16px;
   margin-bottom: 18px;
   border-radius: 12px;
@@ -85,6 +82,7 @@ input {
   font-size: 14px;
   outline: none;
   transition: 0.2s ease;
+  box-sizing: border-box;
 }
 
 input:focus {
@@ -94,18 +92,18 @@ input:focus {
 }
 
 /* Profile two column layout */
-
 .form-row {
   display: flex;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .form-row > div {
   flex: 1;
+  min-width: 200px;
 }
 
 /* ================= BUTTON ================= */
-
 .primary-btn {
   background: #2cb1a5;
   color: #ffffff;
@@ -121,40 +119,13 @@ input:focus {
   opacity: 0.9;
 }
 
-/* ================= CHECKBOX ROW ================= */
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .settings-container {
+    flex-direction: column;
+  }
 
-.checkbox-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid #f3f4f6;
-  font-size: 14px;
-}
-
-.checkbox-row input {
-  width: 18px;
-  height: 18px;
-}
-
-/* ================= ROLE BOX ================= */
-
-.role-box {
-  background: #f9fafb;
-  padding: 18px;
-  border-radius: 14px;
-  margin-bottom: 15px;
-  border: 1px solid #e5e7eb;
-}
-
-.role-box strong {
-  display: block;
-  margin-bottom: 5px;
-  color: #111827;
-}
-
-.role-box p {
-  font-size: 13px;
-  color: #6b7280;
-  margin: 0;
+  .settings-menu {
+    width: 100%;
+  }
 }

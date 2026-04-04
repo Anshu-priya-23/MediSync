@@ -1,9 +1,10 @@
 .reports-page {
   padding: 30px;
-  font-size:20px;
+  font-size: 20px;
   font-family: "Segoe UI", sans-serif;
 }
 
+/* Header */
 .reports-header {
   display: flex;
   justify-content: space-between;
@@ -16,26 +17,7 @@
   margin: 0;
 }
 
-.reports-header p {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.export-btn {
-  background: #2cb1a5;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 22px;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.export-btn:hover {
-  opacity: 0.9;
-}
-
-/* Summary Cards */
+/* ================= CARDS ================= */
 .summary-cards {
   display: flex;
   gap: 20px;
@@ -48,18 +30,26 @@
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
 }
 
 .card p {
   color: #6b7280;
   font-size: 14px;
+  margin: 0;
 }
 
 .card h3 {
   margin-top: 10px;
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: 600;
 }
 
+/* Colors */
 .orange {
   color: #f59e0b;
 }
@@ -68,10 +58,21 @@
   color: #ef4444;
 }
 
-/* Charts */
+/* ================= CHARTS ================= */
 .charts-grid {
   display: flex;
   gap: 20px;
+}
+
+/* Make responsive */
+@media (max-width: 900px) {
+  .charts-grid {
+    flex-direction: column;
+  }
+
+  .summary-cards {
+    flex-direction: column;
+  }
 }
 
 .chart-card {
@@ -85,4 +86,13 @@
 .chart-card h4 {
   margin-bottom: 15px;
   font-size: 16px;
+  font-weight: 600;
+}
+
+/* ================= EMPTY STATE ================= */
+.chart-card p {
+  text-align: center;
+  color: #9ca3af;
+  margin-top: 40px;
+  font-size: 14px;
 }

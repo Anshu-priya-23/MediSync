@@ -1,12 +1,84 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Settings.css";
-import { FiUser, FiLock, FiBell, FiSliders, FiShield } from "react-icons/fi";
+import { FiUser, FiLock, FiSliders } from "react-icons/fi";
+import axios from "axios";
 
 const Settings = () => {
-const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("profile");
+
+  const [profile, setProfile] = useState({
+    name: "",
+    email: ""
+  });
+
+  const [preferences, setPreferences] = useState({
+    lowStock: "",
+    expiryDays: ""
+  });
+
+  // ✅ NEW PASSWORD STATE
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  // ✅ FETCH SETTINGS DATA
+  useEffect(() => {
+    axios.get("http://localhost:5005/api/analytics/settings")
+      .then((res) => {
+        setProfile(res.data?.profile || { name: "", email: "" });
+        setPreferences(res.data?.preferences || { lowStock: "", expiryDays: "" });
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
+  // ✅ SAVE PROFILE
+  const saveProfile = () => {
+    axios.put("http://localhost:5005/api/analytics/settings/profile", profile)
+      .then(() => alert("Profile updated"))
+      .catch(err => console.error(err));
+  };
+
+  // ✅ SAVE PREFERENCES
+  const savePreferences = () => {
+    axios.put("http://localhost:5005/api/analytics/settings/preferences", preferences)
+      .then(() => alert("Preferences updated"))
+      .catch(err => console.error(err));
+  };
+
+  // ✅ PASSWORD FUNCTION
+  const updatePassword = async () => {
+    const { currentPassword, newPassword, confirmPassword } = passwordData;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return alert("All fields required");
+    }
+
+    if (newPassword !== confirmPassword) {
+      return alert("Passwords do not match");
+    }
+
+    try {
+      const res = await axios.put(
+        "http://localhost:5005/api/analytics/settings/password",
+        { currentPassword, newPassword }
+      );
+
+      alert(res.data.message);
+
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+
+    } catch (err) {
+      alert(err.response?.data?.message || "Error updating password");
+    }
+  };
 
   return (
-
     <div className="settings-page">
       <h2>Settings</h2>
       <div className="settings-container">
@@ -28,24 +100,10 @@ const [activeTab, setActiveTab] = useState("profile");
           </div>
 
           <div
-            className={`menu-item ${activeTab === "notifications" ? "active" : ""}`}
-            onClick={() => setActiveTab("notifications")}
-          >
-            <FiBell /> Notification Settings
-          </div>
-
-          <div
             className={`menu-item ${activeTab === "preferences" ? "active" : ""}`}
             onClick={() => setActiveTab("preferences")}
           >
             <FiSliders /> System Preferences
-          </div>
-
-          <div
-            className={`menu-item ${activeTab === "roles" ? "active" : ""}`}
-            onClick={() => setActiveTab("roles")}
-          >
-            <FiShield /> Role & Permissions
           </div>
         </div>
 
@@ -60,16 +118,28 @@ const [activeTab, setActiveTab] = useState("profile");
               <div className="form-row">
                 <div>
                   <label>Full Name</label>
-                  <input defaultValue="System Admin" />
+                  <input
+                    value={profile?.name || ""}
+                    onChange={(e) =>
+                      setProfile({ ...profile, name: e.target.value })
+                    }
+                  />
                 </div>
 
                 <div>
                   <label>Email</label>
-                  <input defaultValue="admin@medisync.com" />
+                  <input
+                    value={profile?.email || ""}
+                    onChange={(e) =>
+                      setProfile({ ...profile, email: e.target.value })
+                    }
+                  />
                 </div>
               </div>
 
-              <button className="primary-btn">Save Changes</button>
+              <button onClick={saveProfile} className="primary-btn">
+                Save Changes
+              </button>
             </div>
           )}
 
@@ -79,74 +149,62 @@ const [activeTab, setActiveTab] = useState("profile");
               <h3>Change Password</h3>
 
               <label>Current Password</label>
-              <input type="password" />
+              <input
+                type="password"
+                value={passwordData.currentPassword}
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                }
+              />
 
               <label>New Password</label>
-              <input type="password" />
+              <input
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, newPassword: e.target.value })
+                }
+              />
 
               <label>Confirm Password</label>
-              <input type="password" />
+              <input
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                }
+              />
 
-              <button className="primary-btn">Update Password</button>
+              <button onClick={updatePassword} className="primary-btn">
+                Update Password
+              </button>
             </div>
           )}
 
-          {/* NOTIFICATIONS */}
-          {activeTab === "notifications" && (
-            <div className="settings-card">
-              <h3>Notification Settings</h3>
-
-              <div className="checkbox-row">
-                <span>Low stock alerts</span>
-                <input type="checkbox" defaultChecked />
-              </div>
-
-              <div className="checkbox-row">
-                <span>New supplier registration</span>
-                <input type="checkbox" defaultChecked />
-              </div>
-
-              <div className="checkbox-row">
-                <span>Expiry date warnings</span>
-                <input type="checkbox" defaultChecked />
-              </div>
-
-              <div className="checkbox-row">
-                <span>Order updates</span>
-                <input type="checkbox" defaultChecked />
-              </div>
-            </div>
-          )}
-
-          {/* SYSTEM PREFERENCES */}
+          {/* PREFERENCES */}
           {activeTab === "preferences" && (
             <div className="settings-card">
               <h3>System Preferences</h3>
 
               <label>Default Low Stock Threshold</label>
-              <input defaultValue="100" />
+              <input
+                value={preferences?.lowStock || ""}
+                onChange={(e) =>
+                  setPreferences({ ...preferences, lowStock: e.target.value })
+                }
+              />
 
               <label>Expiry Warning Days</label>
-              <input defaultValue="90" />
+              <input
+                value={preferences?.expiryDays || ""}
+                onChange={(e) =>
+                  setPreferences({ ...preferences, expiryDays: e.target.value })
+                }
+              />
 
-              <button className="primary-btn">Save Preferences</button>
-            </div>
-          )}
-
-          {/* ROLES */}
-          {activeTab === "roles" && (
-            <div className="settings-card">
-              <h3>Role & Permission Settings</h3>
-
-              <div className="role-box">
-                <strong>Admin</strong>
-                <p>Full access to all system features</p>
-              </div>
-
-              <div className="role-box">
-                <strong>Supplier</strong>
-                <p>Manage own medicines, view orders and performance</p>
-              </div>
+              <button onClick={savePreferences} className="primary-btn">
+                Save Preferences
+              </button>
             </div>
           )}
 

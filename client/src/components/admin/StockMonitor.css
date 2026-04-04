@@ -1,67 +1,115 @@
+/* ================= PAGE ================= */
 .stock-page {
   padding: 30px;
-  font-size: 20px;
-  margin-top:-20px;
+  font-size: 16px;
+  margin-top: -10px;
   font-family: "Segoe UI", sans-serif;
 }
 
+.stock-page h2 {
+  margin-bottom: 10px;
+}
+
+/* ================= FILTERS ================= */
 .filters {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
   align-items: center;
   margin: 20px 0;
 }
 
+/* ================= DROPDOWNS ================= */
 select {
-  padding: 10px 16px;
+  padding: 8px 14px;
   border-radius: 20px;
-  border: 2px solid #d1d5db;
+  border: 1.5px solid #d1d5db;
   background: white;
-  font-size: 14px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
 }
 
+/* ================= SEARCH BAR ================= */
 .search-box {
   display: flex;
   align-items: center;
-  background: #f3f4f6;
-  padding: 10px 16px;
+  border: 1.5px solid #d1d5db;
   border-radius: 25px;
-  gap: 10px;
- border: 2px solid #d1d5db;
- height:15px;
- background-color: white;
- 
+  overflow: hidden;
+  height: 36px;
+  width: 260px;
+  background: white;
+  transition: border 0.2s ease;
 }
 
+/* remove extra inner box */
 .search-box input {
   border: none;
-  background: transparent;
   outline: none;
-  font-size: 14px;
+  box-shadow: none;
+  padding: 6px 10px;
+  font-size: 13px;
+  flex: 1;
+  background: transparent;
+  color: #111827;
 }
 
+/* remove focus glow */
+.search-box input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* icon */
+.search-box svg {
+  margin-left: 12px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* clean focus effect */
+.search-box:focus-within {
+  border: 1.5px solid #2cb1a5;
+}
+
+/* ================= TABLE ================= */
 .table-container {
+  width: 100%;
+  overflow-x: auto; /* important for split screen */
   background: white;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
 }
 
+/* ================= TABLE STRUCTURE ================= */
 table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
 }
 
-th, td {
-  padding: 16px;
+/* ================= HEADER ================= */
+th {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* ================= CELLS ================= */
+th,
+td {
+  padding: 14px;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
 }
 
+/* ================= STATUS ================= */
 .status {
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -80,14 +128,16 @@ th, td {
   color: #dc2626;
 }
 
+/* ================= ACTION ICONS ================= */
 .actions {
   display: flex;
-  gap: 15px;
+  gap: 12px;
 }
 
 .edit-icon {
   cursor: pointer;
   color: #6b7280;
+  transition: 0.2s;
 }
 
 .edit-icon:hover {
@@ -97,70 +147,70 @@ th, td {
 .delete-icon {
   cursor: pointer;
   color: #6b7280;
+  transition: 0.2s;
 }
 
 .delete-icon:hover {
   color: #ef4444;
 }
-/* ================= MODAL OVERLAY ================= */
+
+/* ================= MODAL ================= */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-   background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2000;
-  overflow-y: auto;   /* prevents overflow outside page */
 }
 
-/* ================= MODAL BOX ================= */
 .modal {
   background: white;
-  width: 500px;
-  max-height: 90vh;   /* prevents going out of screen */
-  overflow-y: auto;   /* enables scroll inside modal */
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+  width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
 }
 
-/* ================= MODAL FORM ================= */
+/* form */
 .modal label {
   display: block;
-  margin-top: 15px;
-  font-size: 14px;
+  margin-top: 12px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .modal input {
   width: 100%;
-  margin-top: 6px;
-  padding: 10px 14px;
-  border-radius: 15px;
+  margin-top: 5px;
+  padding: 8px 12px;
+  border-radius: 12px;
   border: 1px solid #d1d5db;
   outline: none;
 }
 
+/* buttons */
 .modal-buttons {
   display: flex;
   justify-content: flex-end;
-  gap: 15px;
+  gap: 10px;
   margin-top: 20px;
 }
 
 .cancel-btn {
-  padding: 8px 18px;
-  border-radius: 20px;
+  padding: 6px 16px;
+  border-radius: 18px;
   border: 1px solid #d1d5db;
   background: white;
   cursor: pointer;
 }
 
 .save-btn {
-  padding: 8px 18px;
-  border-radius: 20px;
+  padding: 6px 16px;
+  border-radius: 18px;
   border: none;
   background: #2cb1a5;
   color: white;
@@ -168,8 +218,8 @@ th, td {
 }
 
 .delete-btn {
-  padding: 8px 18px;
-  border-radius: 20px;
+  padding: 6px 16px;
+  border-radius: 18px;
   border: none;
   background: #ef4444;
   color: white;
@@ -178,4 +228,16 @@ th, td {
 
 .delete-modal {
   text-align: center;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-box {
+    width: 100%;
+  }
 }

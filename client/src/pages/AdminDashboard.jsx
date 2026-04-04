@@ -1,8 +1,7 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { Routes, Route, NavLink } from "react-router-dom";
 import {
   FiGrid,
-  FiFolder,
   FiActivity,
   FiUsers,
   FiBarChart2,
@@ -12,56 +11,56 @@ import {
 } from "react-icons/fi";
 
 import Dashboard from "../components/admin/Dashboard";
-import Categories from "../components/admin/Categories";
-import StockMonitor from "../components/admin/StockMonitor";
+import StockMonitor from "../components/admin/stockMonitor";
 import SupplierManagement from "../components/admin/SupplierManagement";
 import Reports from "../components/admin/Reports";
-import Settings from "../components/admin/Settings";
+import Settings from "../components/admin/settings";
 
-import logo from "../assets/logo.jpeg";
 import "./AdminDashboard.css";
 
 function AdminDashboard() {
-  const [open, setOpen]=useState(true);
+  const [open, setOpen] = useState(true);
+
   return (
     <div className="admin-container">
-    <aside className={`sidebar ${open ? "" : "closed"}`}>
 
+      {/* SIDEBAR */}
+      <aside className={`sidebar ${open ? "" : "closed"}`}>
+
+        {/* HEADER (LOGO REMOVED) */}
         <div className="sidebar-header">
-          <div className="logo">
-            <img src={logo} alt="logo" />
-            <span>MediSync</span>
-            
-          </div>
-          <span className="close-btn" onClick={() => setOpen(false)}>×</span>
+          <span
+            className="close-btn"
+            onClick={() => setOpen(false)}
+          >
+            ×
+          </span>
         </div>
 
+        {/* MENU */}
         <nav className="menu">
-          <NavLink to="dashboard">
+          <NavLink to="dashboard" title="Dashboard">
             <FiGrid /> Dashboard
           </NavLink>
 
-          <NavLink to="categories">
-            <FiFolder /> Categories
-          </NavLink>
-
-          <NavLink to="stock-monitor">
+          <NavLink to="stock-monitor" title="Stock Monitor">
             <FiActivity /> Stock Monitor
           </NavLink>
 
-          <NavLink to="supplier-management">
+          <NavLink to="supplier-management" title="Supplier Management">
             <FiUsers /> Supplier Management
           </NavLink>
 
-          <NavLink to="reports">
+          <NavLink to="reports" title="Reports">
             <FiBarChart2 /> Reports
           </NavLink>
 
-          <NavLink to="settings">
+          <NavLink to="settings" title="Settings">
             <FiSettings /> Settings
           </NavLink>
         </nav>
 
+        {/* LOGOUT */}
         <div className="logout">
           <FiLogOut />
           Logout
@@ -69,26 +68,31 @@ function AdminDashboard() {
 
       </aside>
 
+      {/* MAIN CONTENT */}
       <main className="content">
+
+        {/* HAMBURGER (WHEN CLOSED) */}
         {!open && (
-  <FiMenu
-    className="hamburger"
-    onClick={() => setOpen(true)}
-  />
-)}
-  <Routes>
-    <Route index element={<Dashboard />} />
-    <Route path="dashboard" element={<Dashboard />} />
-    <Route path="categories" element={<Categories />} />
-    <Route path="stock-monitor" element={<StockMonitor />} />
-    <Route path="supplier-management" element={<SupplierManagement />} />
-    <Route path="reports" element={<Reports />} />
-    <Route path="settings" element={<Settings />} />
-  </Routes>
+          <FiMenu
+            className="hamburger"
+            onClick={() => setOpen(true)}
+          />
+        )}
+
+        {/* ROUTES */}
+        <Routes>
+          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="stock-monitor" element={<StockMonitor />} />
+          <Route path="supplier-management" element={<SupplierManagement />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="settings" element={<Settings />} />
+        </Routes>
+
       </main>
+
     </div>
   );
 }
-
 
 export default AdminDashboard;
