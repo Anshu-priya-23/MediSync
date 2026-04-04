@@ -11,24 +11,26 @@ const Settings = () => {
     email: ""
   });
 
+  // ✅ ONLY expiryDays now
   const [preferences, setPreferences] = useState({
-    lowStock: "",
     expiryDays: ""
   });
 
-  // ✅ NEW PASSWORD STATE
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: ""
   });
 
-  // ✅ FETCH SETTINGS DATA
+  // ✅ FETCH SETTINGS
   useEffect(() => {
     axios.get("http://localhost:5005/api/analytics/settings")
       .then((res) => {
         setProfile(res.data?.profile || { name: "", email: "" });
-        setPreferences(res.data?.preferences || { lowStock: "", expiryDays: "" });
+
+        setPreferences({
+          expiryDays: res.data?.preferences?.expiryDays || ""
+        });
       })
       .catch((err) => console.error(err));
   }, []);
@@ -40,14 +42,17 @@ const Settings = () => {
       .catch(err => console.error(err));
   };
 
-  // ✅ SAVE PREFERENCES
+  // ✅ SAVE ONLY expiryDays
   const savePreferences = () => {
-    axios.put("http://localhost:5005/api/analytics/settings/preferences", preferences)
+    axios.put(
+      "http://localhost:5005/api/analytics/settings/preferences",
+      { expiryDays: preferences.expiryDays }
+    )
       .then(() => alert("Preferences updated"))
       .catch(err => console.error(err));
   };
 
-  // ✅ PASSWORD FUNCTION
+  // ✅ PASSWORD
   const updatePassword = async () => {
     const { currentPassword, newPassword, confirmPassword } = passwordData;
 
@@ -81,10 +86,12 @@ const Settings = () => {
   return (
     <div className="settings-page">
       <h2>Settings</h2>
+
       <div className="settings-container">
 
         {/* LEFT MENU */}
         <div className="settings-menu">
+
           <div
             className={`menu-item ${activeTab === "profile" ? "active" : ""}`}
             onClick={() => setActiveTab("profile")}
@@ -103,8 +110,9 @@ const Settings = () => {
             className={`menu-item ${activeTab === "preferences" ? "active" : ""}`}
             onClick={() => setActiveTab("preferences")}
           >
-            <FiSliders /> System Preferences
+            <FiSliders /> Expiry Settings
           </div>
+
         </div>
 
         {/* RIGHT CONTENT */}
@@ -181,24 +189,16 @@ const Settings = () => {
             </div>
           )}
 
-          {/* PREFERENCES */}
+          {/* ONLY EXPIRY */}
           {activeTab === "preferences" && (
             <div className="settings-card">
-              <h3>System Preferences</h3>
-
-              <label>Default Low Stock Threshold</label>
-              <input
-                value={preferences?.lowStock || ""}
-                onChange={(e) =>
-                  setPreferences({ ...preferences, lowStock: e.target.value })
-                }
-              />
+              <h3>Expiry Settings</h3>
 
               <label>Expiry Warning Days</label>
               <input
                 value={preferences?.expiryDays || ""}
                 onChange={(e) =>
-                  setPreferences({ ...preferences, expiryDays: e.target.value })
+                  setPreferences({ expiryDays: e.target.value })
                 }
               />
 
