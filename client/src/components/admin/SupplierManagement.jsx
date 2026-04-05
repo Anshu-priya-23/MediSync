@@ -26,7 +26,7 @@ const SupplierManagement = () => {
 
       {/* Header */}
       <div className="supplier-header">
-        <h2>Supplier Management</h2>
+        <h2>Suppliers</h2>
       </div>
 
       {/* Table */}

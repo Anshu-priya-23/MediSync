@@ -1,0 +1,65 @@
+.footer {
+  background: #f7fbfb;
+  padding: 60px 60px 30px;
+  margin-top: 60px;
+  border-top: 1px solid #e5f1f1;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.footer-column {
+  min-width: 200px;
+}
+
+.footer-column h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #151515;
+}
+
+.footer-column p {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #555;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.footer-column p:hover {
+  color: #24aeb1;   /* Netmeds green */
+}
+
+.footer-bottom {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #e5f1f1;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.social-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #555;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.social-item:hover {
+  color: #24aeb1;
+}
+
+.social-icon {
+  font-size: 16px;
+  color: #24aeb1;
+}

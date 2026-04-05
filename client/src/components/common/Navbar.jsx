@@ -1,80 +1,103 @@
-import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, useLocation } from 'react-router-dom'; 
 import { AuthContext } from '../../context/AuthContext';
-import { User } from 'lucide-react';
+import { User } from 'lucide-react'; 
+import { FaBars, FaCapsules, FaSpa, FaLeaf, FaHeartbeat } from "react-icons/fa";
+import "./Navbar.css"; 
 
 const Navbar = () => {
     const { user } = useContext(AuthContext);
-    
-    // State for hover effects
-    const [isProfileHovered, setIsProfileHovered] = useState(false);
-    const [isLoginHovered, setIsLoginHovered] = useState(false);
+    const location = useLocation(); 
 
-    const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : <User size={16} />;
+    const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : <User size={20} />;
+
+    // 🚨 THE CRITICAL FIX: Hide categories on Auth, Profile, and ALL Dashboards!
+    const shouldHideCategories = 
+        ['/profile', '/login', '/register'].includes(location.pathname) || 
+        location.pathname.includes('dashboard');
 
     return (
-        <nav style={styles.nav}>
-            {/* Logo remains the anchor to the Shop page */}
-            <Link to="/" style={styles.logo}>
-                <span style={{color: '#242c44'}}>Medi</span><span style={{color: '#fff'}}>Sync</span>
-            </Link>
+        <div className="navbar-wrapper">
+            {/* --- SLEEK WHITE TOP BAR (ALWAYS VISIBLE) --- */}
+            <nav className="nav-container-white-thin">
+                <Link to="/" className="logo-link">
+                    <span className="logo-text-teal-small">Medi</span>
+                    <span className="logo-text-dark-small">Sync</span>
+                </Link>
 
-            <div style={styles.navLinks}>
-                {user ? (
-                    <div style={styles.userSection}>
-                        {/* ADMIN LINK REMOVED FROM HERE
-                           Admins will now access their dashboard via the Profile sidebar
-                        */}
-                        <Link 
-                            to="/profile" 
-                            style={{
-                                ...styles.profileContainer,
-                                backgroundColor: isProfileHovered ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.15)'
-                            }}
-                            onMouseEnter={() => setIsProfileHovered(true)}
-                            onMouseLeave={() => setIsProfileHovered(false)}
-                        >
-                            <div style={styles.avatarCircle}>{userInitial}</div>
-                            <span style={styles.profileText}>Account</span>
+                <div className="nav-links-right">
+                    {user ? (
+                        <div className="profile-section-static">
+                            <span className="welcome-text-sleek">Welcome, {user.name}</span>
+                            <Link to="/profile" className="avatar-link">
+                                <div className="avatar-circle-sleek">{userInitial}</div>
+                            </Link>
+                        </div>
+                    ) : (
+                        <Link to="/login" className="login-btn-teal-small">
+                            Login / Register
                         </Link>
-                    </div>
-                ) : (
-                    <Link 
-                        to="/login" 
-                        style={{
-                            ...styles.loginBtn,
-                            backgroundColor: isLoginHovered ? '#1a2033' : '#242c44'
-                        }}
-                        onMouseEnter={() => setIsLoginHovered(true)}
-                        onMouseLeave={() => setIsLoginHovered(false)}
-                    >
-                        Login / Register
-                    </Link>
-                )}
-            </div>
-        </nav>
-    );
-};
+                    )}
+                </div>
+            </nav>
 
-const styles = {
-    nav: { 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '0.6rem 2.5rem', 
-        background: '#24aeb1', // Netmeds Teal
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000
-    },
-    logo: { fontSize: '1.5rem', fontWeight: '800', textDecoration: 'none' },
-    navLinks: { display: 'flex', alignItems: 'center' },
-    userSection: { display: 'flex', alignItems: 'center', gap: '15px' },
-    profileContainer: { display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', padding: '5px 12px', borderRadius: '25px', transition: '0.3s' },
-    avatarCircle: { width: '32px', height: '32px', background: '#242c44', color: '#fff', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '14px', fontWeight: 'bold', border: '2px solid rgba(255,255,255,0.3)' },
-    profileText: { color: '#fff', fontSize: '14px', fontWeight: '600' },
-    loginBtn: { padding: '8px 22px', color: '#fff', borderRadius: '25px', textDecoration: 'none', fontSize: '14px', fontWeight: '700', transition: '0.3s' }
+            {/* --- CATEGORY BAR: Visible ONLY on the Home/Shop pages --- */}
+            {!shouldHideCategories && (
+                <div className="category-navbar">
+                    <div className="category-container">
+
+                        {/* ALL CATEGORIES */}
+                        <div className="category-item">
+                            <FaBars className="nav-icon" />
+                            All Categories
+                            <div className="dropdown-menu">
+                                <Link to="/category/baby-care" style={{ textDecoration: 'none' }}>
+                                    <p>Baby Care</p>
+                                </Link>
+                                <Link to="/category/medicine" style={{ textDecoration: 'none' }}>
+                                    <p>Medicine</p>
+                                </Link>
+                                <Link to="/category/beauty" style={{ textDecoration: 'none' }}>
+                                    <p>Beauty</p>
+                                </Link>
+                                <Link to="/category/wellness" style={{ textDecoration: 'none' }}>
+                                    <p>Wellness</p>
+                                </Link>
+                                <Link to="/category/health-devices" style={{ textDecoration: 'none' }}>
+                                    <p>Health Devices</p>
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Medicine */}
+                        <Link to="/category/medicine" className="category-item" style={{ textDecoration: 'none' }}>
+                            <FaCapsules className="nav-icon" />
+                            Medicine
+                        </Link>
+
+                        {/* Beauty */}
+                        <Link to="/category/beauty" className="category-item" style={{ textDecoration: 'none' }}>
+                            <FaSpa className="nav-icon" />
+                            Beauty
+                        </Link>
+
+                        {/* Wellness */}
+                        <Link to="/category/wellness" className="category-item" style={{ textDecoration: 'none' }}>
+                            <FaLeaf className="nav-icon" />
+                            Wellness
+                        </Link>
+
+                        {/* Health Devices */}
+                        <Link to="/category/health-devices" className="category-item" style={{ textDecoration: 'none' }}>
+                            <FaHeartbeat className="nav-icon" />
+                            Health Devices
+                        </Link>
+
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default Navbar;

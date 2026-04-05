@@ -7,7 +7,8 @@ import {
   FiBarChart2,
   FiSettings,
   FiLogOut,
-  FiMenu
+  FiMenu,
+  FiX
 } from "react-icons/fi";
 
 import Dashboard from "../components/admin/Dashboard";
@@ -22,74 +23,76 @@ function AdminDashboard() {
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="admin-container">
+    <div className="admin-layout">
 
-      {/* SIDEBAR */}
-      <aside className={`sidebar ${open ? "" : "closed"}`}>
+      {/* ===== SIDEBAR ===== */}
+      <aside className={`sidebar ${open ? "open" : "closed"}`}>
 
-        {/* HEADER (LOGO REMOVED) */}
+        {/* HEADER */}
         <div className="sidebar-header">
-          <span
+          <h3 className="logo">MediSync</h3>
+
+          <FiX
             className="close-btn"
             onClick={() => setOpen(false)}
-          >
-            ×
-          </span>
+          />
         </div>
 
         {/* MENU */}
         <nav className="menu">
-          <NavLink to="dashboard" title="Dashboard">
+          <NavLink to="dashboard">
             <FiGrid /> Dashboard
           </NavLink>
 
-          <NavLink to="stock-monitor" title="Stock Monitor">
+          <NavLink to="stock-monitor">
             <FiActivity /> Stock Monitor
           </NavLink>
 
-          <NavLink to="supplier-management" title="Supplier Management">
+          <NavLink to="supplier-management">
             <FiUsers /> Supplier Management
           </NavLink>
 
-          <NavLink to="reports" title="Reports">
+          <NavLink to="reports">
             <FiBarChart2 /> Reports
           </NavLink>
 
-          <NavLink to="settings" title="Settings">
+          <NavLink to="settings">
             <FiSettings /> Settings
           </NavLink>
         </nav>
 
         {/* LOGOUT */}
         <div className="logout">
-          <FiLogOut />
-          Logout
+          <FiLogOut /> Logout
         </div>
 
       </aside>
 
-      {/* MAIN CONTENT */}
-      <main className="content">
+      {/* ===== MAIN CONTENT ===== */}
+      <div className="admin-container">
 
-        {/* HAMBURGER (WHEN CLOSED) */}
-        {!open && (
-          <FiMenu
-            className="hamburger"
-            onClick={() => setOpen(true)}
-          />
-        )}
+        <main className="content">
 
-        {/* ROUTES */}
-        <Routes>
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="stock-monitor" element={<StockMonitor />} />
-          <Route path="supplier-management" element={<SupplierManagement />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="settings" element={<Settings />} />
-        </Routes>
+          {/* HAMBURGER WHEN CLOSED */}
+          {!open && (
+            <FiMenu
+              className="hamburger"
+              onClick={() => setOpen(true)}
+            />
+          )}
 
-      </main>
+          <Routes>
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="stock-monitor" element={<StockMonitor />} />
+            <Route path="supplier-management" element={<SupplierManagement />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="settings" element={<Settings />} />
+          </Routes>
+
+        </main>
+
+      </div>
 
     </div>
   );
