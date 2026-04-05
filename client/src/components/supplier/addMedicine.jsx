@@ -4,61 +4,50 @@ import { useParams } from "react-router-dom";
 import "./addMedicine.css";
 import { API_URL, IMAGE_URL } from "../../services/api";
 
+
 const AddMedicine = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // ✅ get id for edit
+
   const [formData, setFormData] = useState({
     name: "",
+    sku: "",
     category: "",
     price: "",
     stock: "",
     threshold: "",
-<<<<<<< HEAD
-    expiryDate: "",
-    entryDate: "",
-    batchNumber: "",
-=======
     expiry: "",
     addedDate: "", // ✅ NEW FIELD
     batch: "",
->>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
     description: "",
     image: null,
   });
+
   const [errors, setErrors] = useState({});
-  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [activeBtn, setActiveBtn] = useState(null);
+  const [preview, setPreview] = useState(null);
 
-  const categories = [
-    "medicine",
-    "baby-care",
-    "beauty",
-    "wellness",
-    "supplements",
-    "personal-care",
-    "health-devices",
-    "herbal",
-    "other",
-  ];
-
+  // =====================
+  // FETCH MEDICINE (EDIT MODE)
+  // =====================
   useEffect(() => {
-    if (id) fetchMedicine();
+    if (id) {
+      fetchMedicine();
+    }
   }, [id]);
 
   const fetchMedicine = async () => {
     try {
       const res = await axios.get(`${API_URL}/medicines/${id}`);
       const data = res.data;
+
       setFormData({
         name: data.name || "",
+        sku: data.sku || "",
         category: data.category || "",
         price: data.price || "",
         stock: data.stock || "",
         threshold: data.minThreshold || "",
-<<<<<<< HEAD
-        expiryDate: data.expiryDate?.split("T")[0] || "",
-        entryDate: data.entryDate?.split("T")[0] || "",
-        batchNumber: data.batchNumber || "",
-=======
         expiry: data.expiryDate
           ? data.expiryDate.split("T")[0]
           : "",
@@ -66,90 +55,103 @@ const AddMedicine = () => {
           ? data.addedDate.split("T")[0]
           : "",
         batch: data.batchNumber || "",
->>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
         description: data.description || "",
         image: null,
       });
-      if (data.image) setPreview(`${IMAGE_URL}/uploads/${data.image}`);
+
+      if (data.image) {
+        setPreview(`${IMAGE_URL}/uploads/${data.image}`);
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to load medicine");
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "image") {
-      const file = files[0];
-      setFormData({ ...formData, image: file });
-      if (file) setPreview(URL.createObjectURL(file));
-    } else {
-      setFormData({ ...formData, [name]: value });
-      if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
-<<<<<<< HEAD
-
-  const validateForm = () => {
+  // =====================
+  // VALIDATION
+  // =====================
+  const validateForm = (data) => {
     const err = {};
-    if (!formData.name.trim()) err.name = "Name is required";
-    if (!formData.category) err.category = "Category is required";
-    if (!formData.expiryDate) err.expiryDate = "Expiry date is required";
-    if (!formData.entryDate) err.entryDate = "Entry date is required";
-    if (formData.price === "" || Number(formData.price) <= 0)
+
+    if (!data.name.trim()) err.name = "Medicine name is required";
+    if (!data.sku.trim()) err.sku = "SKU is required";
+    if (!data.category) err.category = "Category is required";
+
+    if (data.price === "" || Number(data.price) <= 0) {
       err.price = "Enter valid price";
-    if (formData.stock === "" || Number(formData.stock) < 0)
-      err.stock = "Enter valid stock";
+    }
+
+    if (data.stock === "" || Number(data.stock) < 0) {
+      err.stock = "Enter valid stock quantity";
+    }
+
     return err;
   };
 
-=======
+  // =====================
+  // HANDLE CHANGE
+  // =====================
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+
+    if (name === "image") {
+      const file = files[0];
+      setFormData({ ...formData, image: file });
+
+      if (file) {
+        setPreview(URL.createObjectURL(file));
+      }
+    } else {
+      setFormData({ ...formData, [name]: value });
+
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    }
+  };
   
->>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
   const getUserIdFromToken = () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
+
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
       return payload.userId;
-    } catch {
+    } catch (err) {
+      console.error("Invalid token");
       return null;
     }
   };
 
+  const supplierId = getUserIdFromToken();
+
+  // =====================
+  // SUBMIT (CREATE + UPDATE)
+  // =====================
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length) {
-      setErrors(validationErrors);
-      return;
-    }
+    setActiveBtn("save");
 
-    const supplierId = getUserIdFromToken();
-    if (!supplierId) {
-      alert("You must be logged in to save medicine.");
+    const validationErrors = validateForm(formData);
+
+    if (Object.values(validationErrors).some((e) => e)) {
+      setErrors(validationErrors);
       return;
     }
 
     try {
       setLoading(true);
+      setErrors({});
+
       const form = new FormData();
+
       form.append("name", formData.name);
+      form.append("sku", formData.sku);
       form.append("category", formData.category);
       form.append("price", formData.price);
       form.append("stock", formData.stock);
       form.append("minThreshold", formData.threshold);
-<<<<<<< HEAD
-      form.append("expiryDate", formData.expiryDate);
-      form.append("entryDate", formData.entryDate);
-      form.append("batchNumber", formData.batchNumber);
-      form.append("description", formData.description);
-      form.append("supplierId", supplierId);
-      if (formData.image) form.append("image", formData.image);
-
-      if (id) {
-        await axios.put(`${API_URL}/medicines/${id}`, form, {
-=======
       form.append("expiryDate", formData.expiry);
       form.append("addedDate", formData.addedDate); // ✅ NEW
       form.append("batchNumber", formData.batch);
@@ -164,45 +166,47 @@ const AddMedicine = () => {
 
       if (id) {
         res = await axios.put(`${API_URL}/medicines/${id}`, form, {
->>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
           headers: { "Content-Type": "multipart/form-data" },
         });
-        alert("Medicine updated successfully ✅");
       } else {
-<<<<<<< HEAD
-        await axios.post(`${API_URL}/medicines`, form, {
-=======
         res = await axios.post(`${API_URL}/medicines`, form, {
->>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
           headers: { "Content-Type": "multipart/form-data" },
         });
-        alert("Medicine added successfully ✅");
       }
+
+      console.log(res.data);
+
+      alert(
+        id
+          ? "Medicine updated successfully ✅"
+          : "Medicine added successfully ✅"
+      );
+
       handleCancel();
-    } catch (err) {
-      console.error(err.response?.data || err);
-      alert(err.response?.data?.message || "Error saving medicine");
+
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Error occurred");
     } finally {
       setLoading(false);
     }
   };
 
+  // =====================
+  // RESET
+  // =====================
   const handleCancel = () => {
+    setActiveBtn("cancel");
     setFormData({
       name: "",
+      sku: "",
       category: "",
       price: "",
       stock: "",
       threshold: "",
-<<<<<<< HEAD
-      expiryDate: "",
-      entryDate: "",
-      batchNumber: "",
-=======
       expiry: "",
       addedDate: "", // ✅ NEW
       batch: "",
->>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
       description: "",
       image: null,
     });
@@ -213,28 +217,48 @@ const AddMedicine = () => {
   return (
     <>
       <div className="add-page-header">
-        <h1 className="add-page-title">{id ? "Edit Medicine" : "Add Medicine"}</h1>
+        <h1 className="add-page-title">
+          {id ? "Edit Medicine" : "Add Medicine"}
+        </h1>
+        <p className="add-page-subtitle">
+          {id
+            ? "Update medicine details"
+            : "Add a new medicine to your inventory"}
+        </p>
       </div>
 
       <div className="add-form-container">
         <form onSubmit={handleSubmit}>
           <div className="add-form-grid">
 
+            {/* NAME */}
             <div>
-              <label className="add-label">Name</label>
               <input
                 type="text"
                 name="name"
-                className={`add-input ${errors.name ? "input-error" : ""}`}
                 placeholder="Medicine Name"
+                className={`add-input ${errors.name ? "input-error" : ""}`}
                 value={formData.name}
                 onChange={handleChange}
               />
               {errors.name && <p className="error-text">{errors.name}</p>}
             </div>
 
+            {/* SKU */}
             <div>
-              <label className="add-label">Category</label>
+              <input
+                type="text"
+                name="sku"
+                placeholder="SKU"
+                className={`add-input ${errors.sku ? "input-error" : ""}`}
+                value={formData.sku}
+                onChange={handleChange}
+              />
+              {errors.sku && <p className="error-text">{errors.sku}</p>}
+            </div>
+
+            {/* CATEGORY */}
+            <div>
               <select
                 name="category"
                 className={`add-select ${errors.category ? "input-error" : ""}`}
@@ -242,77 +266,61 @@ const AddMedicine = () => {
                 onChange={handleChange}
               >
                 <option value="">Select category</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
+                <option value="baby-care">Baby Care</option>
+                <option value="medicine">Medicine</option>
+                <option value="beauty">Beauty</option>
+                <option value="wellness">Wellness</option>
+                <option value="health-devices">Health Devices</option>
+                <option value="diabetes">Diabetes Care</option>
+                <option value="heart-care">Heart Care</option>
+                <option value="stomach-care">Stomach Care</option>
+                <option value="liver-care">Liver Care</option>
+                <option value="bone-joint-muscle-care">Bone & Joint Care</option>
+                <option value="kidney-care">Kidney Care</option>
+                <option value="derma-care">Derma Care</option>
+                <option value="respiratory-care">Respiratory Care</option>
               </select>
               {errors.category && <p className="error-text">{errors.category}</p>}
             </div>
 
+            {/* PRICE */}
             <div>
-              <label className="add-label">Expiry Date</label>
-              <input
-                type="date"
-                name="expiryDate"
-                className={`add-input ${errors.expiryDate ? "input-error" : ""}`}
-                value={formData.expiryDate}
-                onChange={handleChange}
-              />
-              {errors.expiryDate && <p className="error-text">{errors.expiryDate}</p>}
-            </div>
-
-            <div>
-              <label className="add-label">Stock Entry Date</label>
-              <input
-                type="date"
-                name="entryDate"
-                className={`add-input ${errors.entryDate ? "input-error" : ""}`}
-                value={formData.entryDate}
-                onChange={handleChange}
-              />
-              {errors.entryDate && <p className="error-text">{errors.entryDate}</p>}
-            </div>
-
-            <div>
-              <label className="add-label">Price</label>
               <input
                 type="number"
                 name="price"
-                className={`add-input ${errors.price ? "input-error" : ""}`}
                 placeholder="Price"
+                className={`add-input ${errors.price ? "input-error" : ""}`}
                 value={formData.price}
                 onChange={handleChange}
               />
               {errors.price && <p className="error-text">{errors.price}</p>}
             </div>
 
+            {/* STOCK */}
             <div>
-              <label className="add-label">Stock</label>
               <input
                 type="number"
                 name="stock"
-                className={`add-input ${errors.stock ? "input-error" : ""}`}
                 placeholder="Stock Quantity"
+                className={`add-input ${errors.stock ? "input-error" : ""}`}
                 value={formData.stock}
                 onChange={handleChange}
               />
               {errors.stock && <p className="error-text">{errors.stock}</p>}
             </div>
 
+            {/* THRESHOLD */}
             <div>
-              <label className="add-label">Min Threshold</label>
               <input
                 type="number"
                 name="threshold"
-                className="add-input"
                 placeholder="Min Threshold"
+                className="add-input"
                 value={formData.threshold}
                 onChange={handleChange}
               />
             </div>
 
-<<<<<<< HEAD
-=======
 {/* EXPIRY */}
 <div>
   <label className="hint-label">Expiry Date</label>
@@ -338,44 +346,42 @@ const AddMedicine = () => {
 </div>
 
             {/* BATCH */}
->>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
             <div>
-              <label className="add-label">Batch Number</label>
               <input
                 type="text"
-                name="batchNumber"
-                className="add-input"
+                name="batch"
                 placeholder="Batch Number"
-                value={formData.batchNumber}
+                className="add-input"
+                value={formData.batch}
                 onChange={handleChange}
               />
             </div>
 
+            {/* DESCRIPTION */}
             <div className="add-full-width">
-              <label className="add-label">Description</label>
               <textarea
                 name="description"
-                className="add-textarea"
                 placeholder="Description"
+                className="add-textarea"
                 value={formData.description}
                 onChange={handleChange}
               />
             </div>
 
+            {/* IMAGE */}
             <div className="add-full-width">
-              <label className="add-label">Upload Image</label>
-              <input type="file" name="image" className="add-input" onChange={handleChange} />
-              {preview && <img src={preview} alt="Preview" className="image-preview" />}
+              <input
+                type="file"
+                name="image"
+                className="add-input"
+                onChange={handleChange}
+              />
+              {preview && <img src={preview} width="100" />}
             </div>
 
           </div>
 
           <div className="add-form-actions">
-<<<<<<< HEAD
-            <button type="button" onClick={handleCancel} className="add-btn-cancel">Cancel</button>
-            <button type="submit" disabled={loading} className="add-btn-save">
-              {loading ? "Saving..." : id ? "Update Medicine" : "Save Medicine"}
-=======
             <button
               type="button"
               onClick={handleCancel}
@@ -394,10 +400,8 @@ const AddMedicine = () => {
                 : id
                   ? "Update Medicine"
                   : "Save Medicine"}
->>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
             </button>
           </div>
-
         </form>
       </div>
     </>
