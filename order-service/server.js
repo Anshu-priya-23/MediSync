@@ -1,13 +1,10 @@
 require("dotenv").config();
-const dns = require("node:dns/promises");
 const mongoose = require("mongoose");
 const app = require("./src/app");
 const { startOutboxWorker, stopOutboxWorker } = require("./src/services/eventPublisher");
 const { getClient: initRedisClient, closeRedis } = require("./src/config/redis");
 
 const PORT = process.env.PORT || 5003;
-
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 let httpServer = null;
 let shuttingDown = false;

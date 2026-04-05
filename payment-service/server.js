@@ -1,13 +1,10 @@
 require("dotenv").config();
-const dns = require("node:dns/promises");
 const mongoose = require("mongoose");
 const app = require("./src/app");
 const { startOutboxWorker, stopOutboxWorker } = require("./src/events/publisher");
 const { startOrderEventWorker, stopOrderEventWorker } = require("./src/events/orderEventConsumer");
 
 const PORT = process.env.PORT || 5004;
-
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 let httpServer = null;
 let shuttingDown = false;

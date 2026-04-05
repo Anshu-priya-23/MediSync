@@ -24,13 +24,15 @@ const CategoryPage = () => {
         "respiratory-care": "Respiratory Care"
     };
 
+    const targetCategory = categoryMap[categoryName] || categoryName;
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
                 setLoading(true);
 
                 // --- USING THE SERVICE HERE ---
-                const data = await inventoryService.getProductsByCategory(categoryName);
+                const data = await inventoryService.getProductsByCategory(targetCategory);
                 setDynamicProducts(data);
 
             } catch (error) {
@@ -42,9 +44,7 @@ const CategoryPage = () => {
         };
 
         fetchProducts();
-    }, [categoryName]);
-
-    const targetCategory = categoryMap[categoryName];
+    }, [targetCategory]);
     const displayTitle = targetCategory || categoryName.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 
     return (
