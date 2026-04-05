@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Routes, Route, NavLink } from "react-router-dom";
+import { Routes, Route, NavLink, useLocation } from "react-router-dom";
 import {
   FiGrid,
   FiActivity,
@@ -21,6 +21,7 @@ import "./AdminDashboard.css";
 
 function AdminDashboard() {
   const [open, setOpen] = useState(true);
+  const location = useLocation(); // ✅ added
 
   return (
     <div className="admin-layout">
@@ -40,7 +41,16 @@ function AdminDashboard() {
 
         {/* MENU */}
         <nav className="menu">
-          <NavLink to="dashboard">
+
+          {/* ✅ ONLY CHANGE HERE */}
+          <NavLink
+            to="dashboard"
+            className={({ isActive }) =>
+              isActive || location.pathname === "/admin-dashboard"
+                ? "active"
+                : ""
+            }
+          >
             <FiGrid /> Dashboard
           </NavLink>
 
@@ -59,6 +69,7 @@ function AdminDashboard() {
           <NavLink to="settings">
             <FiSettings /> Settings
           </NavLink>
+
         </nav>
 
         {/* LOGOUT */}
