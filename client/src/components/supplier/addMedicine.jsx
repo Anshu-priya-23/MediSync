@@ -4,206 +4,158 @@ import { useParams } from "react-router-dom";
 import "./addMedicine.css";
 import { API_URL, IMAGE_URL } from "../../services/api";
 
-
 const AddMedicine = () => {
-  const { id } = useParams(); // ✅ get id for edit
-
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
     category: "",
     price: "",
     stock: "",
     threshold: "",
-    expiry: "",
-    batch: "",
+    expiryDate: "",
+    entryDate: "",
+    batchNumber: "",
     description: "",
     image: null,
   });
-
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [activeBtn, setActiveBtn] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // =====================
-  // FETCH MEDICINE (EDIT MODE)
-  // =====================
+  const categories = [
+    "medicine",
+    "baby-care",
+    "beauty",
+    "wellness",
+    "supplements",
+    "personal-care",
+    "health-devices",
+    "herbal",
+    "other",
+  ];
+
   useEffect(() => {
-    if (id) {
-      fetchMedicine();
-    }
+    if (id) fetchMedicine();
   }, [id]);
 
   const fetchMedicine = async () => {
     try {
       const res = await axios.get(`${API_URL}/medicines/${id}`);
       const data = res.data;
-
       setFormData({
         name: data.name || "",
-        sku: data.sku || "",
         category: data.category || "",
         price: data.price || "",
         stock: data.stock || "",
         threshold: data.minThreshold || "",
-        expiry: data.expiryDate
-          ? data.expiryDate.split("T")[0]
-          : "",
-        batch: data.batchNumber || "",
+        expiryDate: data.expiryDate?.split("T")[0] || "",
+        entryDate: data.entryDate?.split("T")[0] || "",
+        batchNumber: data.batchNumber || "",
         description: data.description || "",
         image: null,
       });
-
-      if (data.image) {
-        setPreview(`${IMAGE_URL}/uploads/${data.image}`);
-      }
+      if (data.image) setPreview(`${IMAGE_URL}/uploads/${data.image}`);
     } catch (err) {
       console.error(err);
       alert("Failed to load medicine");
     }
   };
 
-  // =====================
-  // VALIDATION
-  // =====================
-  const validateForm = (data) => {
-    const err = {};
-
-    if (!data.name.trim()) err.name = "Medicine name is required";
-    if (!data.sku.trim()) err.sku = "SKU is required";
-    if (!data.category) err.category = "Category is required";
-
-    if (data.price === "" || Number(data.price) <= 0) {
-      err.price = "Enter valid price";
-    }
-
-    if (data.stock === "" || Number(data.stock) < 0) {
-      err.stock = "Enter valid stock quantity";
-    }
-
-    return err;
-  };
-
-  // =====================
-  // HANDLE CHANGE
-  // =====================
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
     if (name === "image") {
       const file = files[0];
       setFormData({ ...formData, image: file });
-
-      if (file) {
-        setPreview(URL.createObjectURL(file));
-      }
+      if (file) setPreview(URL.createObjectURL(file));
     } else {
       setFormData({ ...formData, [name]: value });
-
-      if (errors[name]) {
-        setErrors((prev) => ({ ...prev, [name]: "" }));
-      }
+      if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
-  
-    // ✅ GET USER ID FROM TOKEN (no login change needed)
+
+  const validateForm = () => {
+    const err = {};
+    if (!formData.name.trim()) err.name = "Name is required";
+    if (!formData.category) err.category = "Category is required";
+    if (!formData.expiryDate) err.expiryDate = "Expiry date is required";
+    if (!formData.entryDate) err.entryDate = "Entry date is required";
+    if (formData.price === "" || Number(formData.price) <= 0)
+      err.price = "Enter valid price";
+    if (formData.stock === "" || Number(formData.stock) < 0)
+      err.stock = "Enter valid stock";
+    return err;
+  };
+
   const getUserIdFromToken = () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
-
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
       return payload.userId;
-    } catch (err) {
-      console.error("Invalid token");
+    } catch {
       return null;
     }
   };
 
-  const supplierId = getUserIdFromToken();
-
-  // =====================
-  // SUBMIT (CREATE + UPDATE)
-  // =====================
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setActiveBtn("save");
-
-    const validationErrors = validateForm(formData);
-
-    if (Object.values(validationErrors).some((e) => e)) {
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length) {
       setErrors(validationErrors);
+      return;
+    }
+
+    const supplierId = getUserIdFromToken();
+    if (!supplierId) {
+      alert("You must be logged in to save medicine.");
       return;
     }
 
     try {
       setLoading(true);
-      setErrors({});
-
       const form = new FormData();
-
       form.append("name", formData.name);
-      form.append("sku", formData.sku);
       form.append("category", formData.category);
       form.append("price", formData.price);
       form.append("stock", formData.stock);
       form.append("minThreshold", formData.threshold);
-      form.append("expiryDate", formData.expiry);
-      form.append("batchNumber", formData.batch);
+      form.append("expiryDate", formData.expiryDate);
+      form.append("entryDate", formData.entryDate);
+      form.append("batchNumber", formData.batchNumber);
       form.append("description", formData.description);
-      form.append("supplierId",supplierId);
-
-      if (formData.image) {
-        form.append("image", formData.image);
-      }
-
-      let res;
+      form.append("supplierId", supplierId);
+      if (formData.image) form.append("image", formData.image);
 
       if (id) {
-        // ✅ UPDATE
-        res = await axios.put(`${API_URL}/medicines/${id}`, form, {
+        await axios.put(`${API_URL}/medicines/${id}`, form, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+        alert("Medicine updated successfully ✅");
       } else {
-        // ✅ CREATE
-        res = await axios.post(`${API_URL}/medicines`, form, {
+        await axios.post(`${API_URL}/medicines`, form, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+        alert("Medicine added successfully ✅");
       }
-
-      console.log(res.data);
-
-      alert(
-        id
-          ? "Medicine updated successfully ✅"
-          : "Medicine added successfully ✅"
-      );
-
       handleCancel();
-
-    } catch (error) {
-      console.error(error);
-      alert(error.response?.data?.message || "Error occurred");
+    } catch (err) {
+      console.error(err.response?.data || err);
+      alert(err.response?.data?.message || "Error saving medicine");
     } finally {
       setLoading(false);
     }
   };
 
-  // =====================
-  // RESET
-  // =====================
   const handleCancel = () => {
-    setActiveBtn("cancel");
     setFormData({
       name: "",
-      sku: "",
       category: "",
       price: "",
       stock: "",
       threshold: "",
-      expiry: "",
-      batch: "",
+      expiryDate: "",
+      entryDate: "",
+      batchNumber: "",
       description: "",
       image: null,
     });
@@ -214,48 +166,28 @@ const AddMedicine = () => {
   return (
     <>
       <div className="add-page-header">
-        <h1 className="add-page-title">
-          {id ? "Edit Medicine" : "Add Medicine"}
-        </h1>
-        <p className="add-page-subtitle">
-          {id
-            ? "Update medicine details"
-            : "Add a new medicine to your inventory"}
-        </p>
+        <h1 className="add-page-title">{id ? "Edit Medicine" : "Add Medicine"}</h1>
       </div>
 
       <div className="add-form-container">
         <form onSubmit={handleSubmit}>
           <div className="add-form-grid">
 
-            {/* NAME */}
             <div>
+              <label className="add-label">Name</label>
               <input
                 type="text"
                 name="name"
-                placeholder="Medicine Name"
                 className={`add-input ${errors.name ? "input-error" : ""}`}
+                placeholder="Medicine Name"
                 value={formData.name}
                 onChange={handleChange}
               />
               {errors.name && <p className="error-text">{errors.name}</p>}
             </div>
 
-            {/* SKU */}
             <div>
-              <input
-                type="text"
-                name="sku"
-                placeholder="SKU"
-                className={`add-input ${errors.sku ? "input-error" : ""}`}
-                value={formData.sku}
-                onChange={handleChange}
-              />
-              {errors.sku && <p className="error-text">{errors.sku}</p>}
-            </div>
-
-            {/* CATEGORY */}
-            <div>
+              <label className="add-label">Category</label>
               <select
                 name="category"
                 className={`add-select ${errors.category ? "input-error" : ""}`}
@@ -263,131 +195,113 @@ const AddMedicine = () => {
                 onChange={handleChange}
               >
                 <option value="">Select category</option>
-                <option value="baby-care">Baby Care</option>
-                <option value="medicine">Medicine</option>
-                <option value="beauty">Beauty</option>
-                <option value="wellness">Wellness</option>
-                <option value="health-devices">Health Devices</option>
-                <option value="diabetes">Diabetes Care</option>
-                <option value="heart-care">Heart Care</option>
-                <option value="stomach-care">Stomach Care</option>
-                <option value="liver-care">Liver Care</option>
-                <option value="bone-joint-muscle-care">Bone & Joint Care</option>
-                <option value="kidney-care">Kidney Care</option>
-                <option value="derma-care">Derma Care</option>
-                <option value="respiratory-care">Respiratory Care</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </select>
               {errors.category && <p className="error-text">{errors.category}</p>}
             </div>
 
-            {/* PRICE */}
             <div>
+              <label className="add-label">Expiry Date</label>
+              <input
+                type="date"
+                name="expiryDate"
+                className={`add-input ${errors.expiryDate ? "input-error" : ""}`}
+                value={formData.expiryDate}
+                onChange={handleChange}
+              />
+              {errors.expiryDate && <p className="error-text">{errors.expiryDate}</p>}
+            </div>
+
+            <div>
+              <label className="add-label">Stock Entry Date</label>
+              <input
+                type="date"
+                name="entryDate"
+                className={`add-input ${errors.entryDate ? "input-error" : ""}`}
+                value={formData.entryDate}
+                onChange={handleChange}
+              />
+              {errors.entryDate && <p className="error-text">{errors.entryDate}</p>}
+            </div>
+
+            <div>
+              <label className="add-label">Price</label>
               <input
                 type="number"
                 name="price"
-                placeholder="Price"
                 className={`add-input ${errors.price ? "input-error" : ""}`}
+                placeholder="Price"
                 value={formData.price}
                 onChange={handleChange}
               />
               {errors.price && <p className="error-text">{errors.price}</p>}
             </div>
 
-            {/* STOCK */}
             <div>
+              <label className="add-label">Stock</label>
               <input
                 type="number"
                 name="stock"
-                placeholder="Stock Quantity"
                 className={`add-input ${errors.stock ? "input-error" : ""}`}
+                placeholder="Stock Quantity"
                 value={formData.stock}
                 onChange={handleChange}
               />
               {errors.stock && <p className="error-text">{errors.stock}</p>}
             </div>
 
-            {/* THRESHOLD */}
             <div>
+              <label className="add-label">Min Threshold</label>
               <input
                 type="number"
                 name="threshold"
-                placeholder="Min Threshold"
                 className="add-input"
+                placeholder="Min Threshold"
                 value={formData.threshold}
                 onChange={handleChange}
               />
             </div>
 
-            {/* EXPIRY */}
             <div>
-              <input
-                type="date"
-                name="expiry"
-                className="add-input"
-                value={formData.expiry}
-                onChange={handleChange}
-              />
-            </div>
-
-            {/* BATCH */}
-            <div>
+              <label className="add-label">Batch Number</label>
               <input
                 type="text"
-                name="batch"
-                placeholder="Batch Number"
+                name="batchNumber"
                 className="add-input"
-                value={formData.batch}
+                placeholder="Batch Number"
+                value={formData.batchNumber}
                 onChange={handleChange}
               />
             </div>
 
-            {/* DESCRIPTION */}
             <div className="add-full-width">
+              <label className="add-label">Description</label>
               <textarea
                 name="description"
-                placeholder="Description"
                 className="add-textarea"
+                placeholder="Description"
                 value={formData.description}
                 onChange={handleChange}
               />
             </div>
 
-            {/* IMAGE */}
             <div className="add-full-width">
-              <input
-                type="file"
-                name="image"
-                className="add-input"
-                onChange={handleChange}
-              />
-              {preview && <img src={preview} width="100" />}
+              <label className="add-label">Upload Image</label>
+              <input type="file" name="image" className="add-input" onChange={handleChange} />
+              {preview && <img src={preview} alt="Preview" className="image-preview" />}
             </div>
 
           </div>
 
           <div className="add-form-actions">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className={`add-btn-cancel ${activeBtn === "cancel" ? "active-btn" : ""
-                }`}
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className={`add-btn-save ${activeBtn === "save" ? "active-btn" : ""
-                }`}
-            >
-              {loading
-                ? "Saving..."
-                : id
-                  ? "Update Medicine"
-                  : "Save Medicine"}
+            <button type="button" onClick={handleCancel} className="add-btn-cancel">Cancel</button>
+            <button type="submit" disabled={loading} className="add-btn-save">
+              {loading ? "Saving..." : id ? "Update Medicine" : "Save Medicine"}
             </button>
           </div>
+
         </form>
       </div>
     </>

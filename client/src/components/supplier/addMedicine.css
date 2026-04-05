@@ -111,6 +111,16 @@
   transform: translateY(-2px);
 }
 
+/* ================= Image Preview ================= */
+
+.image-preview {
+  margin-top: 10px;
+  border-radius: 8px;
+  max-width: 150px;
+  display: block;
+}
+
+
 /* ================= Buttons ================= */
 
 .add-form-actions {
@@ -159,4 +169,20 @@
   color: red;
   font-size: 12px;
   margin-top: 4px;
+}
+
+
+/* ================= Responsive ================= */
+
+@media (max-width: 768px) {
+  .add-form-grid {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+  .add-full-width {
+    grid-column: span 1;
+  }
+  .add-form-container {
+    padding: 30px 20px;
+  }
 }

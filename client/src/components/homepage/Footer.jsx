@@ -41,30 +41,61 @@ const Footer = () => {
         <div className="footer-column">
           <h4>SOCIAL</h4>
 
-          <p className="social-item">
+          {/* Added <a> tags with respective website links */}
+          <a 
+            href="https://www.facebook.com" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="social-item"
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
             <FaFacebookF className="social-icon" />
             Facebook
-          </p>
+          </a>
 
-          <p className="social-item">
+          <a 
+            href="https://www.twitter.com" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="social-item"
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
             <FaTwitter className="social-icon" />
             Twitter
-          </p>
+          </a>
 
-          <p className="social-item">
+          <a 
+            href="https://www.linkedin.com" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="social-item"
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
             <FaLinkedinIn className="social-icon" />
             LinkedIn
-          </p>
+          </a>
 
-          <p className="social-item">
+          <a 
+            href="https://www.instagram.com" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="social-item"
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
             <FaInstagram className="social-icon" />
             Instagram
-          </p>
+          </a>
 
-          <p className="social-item">
+          <a 
+            href="https://www.youtube.com" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="social-item"
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
             <FaYoutube className="social-icon" />
             Youtube
-          </p>
+          </a>
         </div>
 
       </div>
