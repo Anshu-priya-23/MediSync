@@ -60,7 +60,7 @@ const Reports = () => {
 
         <div className="card">
           <p>Total Sales</p>
-          <h3>${data.totalSales || 0}</h3>
+          <h3>Rs {data.totalSales || 0}</h3>
         </div>
 
         <div className="card">

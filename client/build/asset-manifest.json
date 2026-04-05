@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/static/css/main.00e243f5.css",
+    "main.js": "/static/js/main.bffea485.js",
+    "static/media/kidney.png": "/static/media/kidney.07a67a550dd80edffa86.png",
+    "static/media/liver.png": "/static/media/liver.a45d31661694dfcccb0b.png",
+    "static/media/derma.png": "/static/media/derma.def4fc87b66b7d9000d1.png",
+    "static/media/respiratory.png": "/static/media/respiratory.d8a0d0627ef1e7ea397c.png",
+    "static/media/stomach.png": "/static/media/stomach.b2e3eabd6c9c9ce8c20e.png",
+    "static/media/bone.png": "/static/media/bone.ff6a7f42a0e9cee74763.png",
+    "static/media/heart.png": "/static/media/heart.4fc51e21c31924c64372.png",
+    "index.html": "/index.html",
+    "main.00e243f5.css.map": "/static/css/main.00e243f5.css.map",
+    "main.bffea485.js.map": "/static/js/main.bffea485.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.00e243f5.css",
+    "static/js/main.bffea485.js"
+  ]
+}
