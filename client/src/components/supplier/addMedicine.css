@@ -147,3 +147,16 @@
   background-color: #249b91;
   transform: scale(0.97);
 }
+
+/* RED BORDER */
+.input-error {
+  border: 1px solid red !important;
+  outline: none;
+}
+
+/* ERROR TEXT */
+.error-text {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}

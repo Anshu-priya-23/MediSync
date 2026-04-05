@@ -55,9 +55,7 @@ const Register = () => {
 
                 <form onSubmit={handleSubmit} style={styles.form}>
 
-                    <div style={styles.radioSection}>
-                        <label style={styles.label}>Register as:</label>
-                        <div style={styles.radioGroup}>
+                    <div style={styles.radioGroup}>
                             <label style={styles.radioLabel}>
                                 <input 
                                     type="radio" 
@@ -68,6 +66,18 @@ const Register = () => {
                                 />
                                 Patient
                             </label>
+                            
+                            <label style={styles.radioLabel}>
+                                <input 
+                                    type="radio" 
+                                    value="pharmacist" 
+                                    checked={formData.role === 'pharmacist'}
+                                    onChange={(e) => setFormData({...formData, role: e.target.value})}
+                                    style={styles.radioInput}
+                                />
+                                Pharmacist
+                            </label>
+
                             <label style={styles.radioLabel}>
                                 <input 
                                     type="radio" 
@@ -76,10 +86,9 @@ const Register = () => {
                                     onChange={(e) => setFormData({...formData, role: e.target.value})}
                                     style={styles.radioInput}
                                 />
-                                Pharmacist / Admin
+                                Admin
                             </label>
                         </div>
-                    </div>
 
                     <div style={styles.inputGroup}>
                         <label style={styles.label}>Full Name</label>

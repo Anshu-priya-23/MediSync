@@ -20,6 +20,9 @@ import SupplierDashboard from './pages/supplierDashboard';
 import Profile from './pages/Profile';
 
 import { Toaster } from 'react-hot-toast';
+import CategoryPage from './pages/CategoryPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import AddMedicine from './components/supplier/addMedicine';
 
 /* 🔥 Layout Wrapper */
 function Layout() {
@@ -84,9 +87,12 @@ function Layout() {
           path="/supplier-dashboard/*"
           element={<SupplierDashboard />}
         />
+        <Route path="/supplier-dashboard/add-medicine/:id" element={<AddMedicine />} />
 
         {/* Catch-all route to prevent 404s during the demo */}
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/category/:categoryName" element={<CategoryPage />} />
+        <Route path="/product/:productId" element={<ProductDetailPage />} />
       </Routes>
     </>
   );
