@@ -23,7 +23,21 @@ const DashboardHome = () => {
   const [medicineCount, setMedicineCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const supplierId = "661111111111111111111111";
+      // ✅ GET USER ID FROM TOKEN (no login change needed)
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.userId;
+    } catch (err) {
+      console.error("Invalid token");
+      return null;
+    }
+  };
+
+  const supplierId = getUserIdFromToken();
 
   useEffect(() => {
     const fetchAllDashboardData = async () => {
