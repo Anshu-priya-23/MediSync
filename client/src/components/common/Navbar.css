@@ -47,6 +47,10 @@
     transition: transform 0.2s ease;
 }
 
+.avatar-link:hover {
+    transform: scale(1.05);
+}
+
 .avatar-circle-sleek {
     width: 40px;  /* Balanced size for thin header */
     height: 40px; 
@@ -69,6 +73,11 @@
     text-decoration: none;
     font-weight: 700;
     font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.login-btn-teal-small:hover {
+    background-color: #1e8f92;
 }
 
 /* --- CATEGORY BAR --- */
@@ -86,6 +95,7 @@
     padding: 0;
 }
 
+/* --- THE FIX: Dropdown Anchor --- */
 .category-item {
     color: white;
     font-weight: 600;
@@ -94,4 +104,51 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
+    position: relative; /* CRITICAL: Tells the dropdown where to attach */
+    transition: opacity 0.2s ease;
+}
+
+.category-item:hover {
+    opacity: 0.9;
+}
+
+/* --- DROPDOWN MENU STYLES --- */
+.dropdown-menu {
+    display: none;             /* Hidden by default */
+    position: absolute;        /* Take it out of the normal layout flow */
+    top: 100%;                 /* Push it right below the nav bar */
+    left: 0;
+    /* margin-top: 8px; <--- REMOVED THIS SO YOUR MOUSE CAN REACH THE MENU */
+    background-color: #ffffff; /* Clean white background */
+    min-width: 220px;
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.15); /* Soft modern shadow */
+    border-radius: 8px;
+    padding: 10px 0;
+    z-index: 1000;             /* Ensure it stays on top of page content */
+    flex-direction: column;
+    overflow: hidden;          /* Keep rounded corners neat */
+}
+
+/* Show the menu when hovering over "All Categories" */
+.category-item:hover .dropdown-menu {
+    display: flex; 
+}
+
+/* Style the text inside the dropdown so it looks sleek */
+.dropdown-menu a {
+    padding: 12px 20px;
+    color: #4b5563;            /* Dark gray text */
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f8fafc; /* Very light gray hover effect */
+    color: #24aeb1;            /* Matches your exact MediSync teal */
+    padding-left: 25px;        /* Premium slide-right animation */
+}
+
+.dropdown-menu p {
+    margin: 0;                 /* Remove default paragraph margins */
 }
