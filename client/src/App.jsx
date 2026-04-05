@@ -17,7 +17,7 @@ import CategoryPage from "./pages/CategoryPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
-import Orders from "./pages/Orders";
+import OrderSuccess from "./pages/OrderSuccess";
 import PaymentPage from "./pages/PaymentPage";
 import AddMedicine from "./components/supplier/addMedicine";
 
@@ -93,7 +93,16 @@ function Layout() {
           path="/orders"
           element={
             <ProtectedRoute>
-              <Orders />
+              <Navigate to="/profile" replace state={{ activeSection: "orders" }} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/orders/success/:orderId"
+          element={
+            <ProtectedRoute>
+              <OrderSuccess />
             </ProtectedRoute>
           }
         />
