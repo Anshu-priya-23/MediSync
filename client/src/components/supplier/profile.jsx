@@ -4,7 +4,6 @@ import "./profile.css";
 import { API_URL } from "../../services/api";
 
 const Profile = () => {
-  // Matches backend User Schema: name, email, password
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,10 +14,8 @@ const Profile = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Hardcoded ID for demonstration - replace with your actual auth logic/session ID
   const supplierId = "69d088c13f5ee218ae3ccc42";
 
-  // 1. FETCH PROFILE DATA
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -30,7 +27,7 @@ const Profile = () => {
         });
         setLoading(false);
       } catch (err) {
-        alert("Failed to load profile data.");
+        //alert("Failed to load profile data.");
         setLoading(false);
       }
     };
@@ -42,13 +39,12 @@ const Profile = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error for this specific field when user starts typing
+
     if (errors[e.target.name]) {
       setErrors({ ...errors, [e.target.name]: null });
     }
   };
 
-  // 2. VALIDATION LOGIC
   const validate = () => {
     let newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Name is required";
@@ -67,37 +63,36 @@ const Profile = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 3. UPDATE PROFILE
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validate()) return;
 
     try {
-      // Prepare payload: Only include password if user wants to change it
       const payload = {
         name: formData.name,
         email: formData.email,
       };
+
       if (formData.newPassword) payload.password = formData.newPassword;
 
       await axios.put(`${API_URL}/users/${supplierId}`, payload);
 
-      alert("Profile updated successfully!");
-      setFormData({ ...formData, newPassword: "", confirmPassword: "" }); // Reset password fields
+      alert("Settings updated successfully!"); // ✅ changed text
+      setFormData({ ...formData, newPassword: "", confirmPassword: "" });
     } catch (err) {
       alert(err.response?.data?.message || "Update failed.");
     }
   };
 
-  if (loading) return <div className="loading">Loading Profile...</div>;
+  if (loading) return <div className="loading">Loading Settings...</div>;
 
   return (
     <>
       <div className="dashboard-header">
-        <h1 className="dashboard-title">Profile</h1>
+        <h1 className="dashboard-title">Settings</h1> {/* ✅ changed */}
         <p className="dashboard-subtitle">
-          Manage your supplier profile and details
+          Manage your supplier settings and details {/* ✅ changed */}
         </p>
       </div>
 
@@ -132,7 +127,7 @@ const Profile = () => {
           <hr className="divider" />
 
           <h3 className="password-title">Change Password</h3>
-          <p className="password-note">Leave blank if you don't want to change it</p>
+          {/* <p className="password-note">Leave blank if you don't want to change it</p> */}
 
           <div className="profile-grid">
             <div>

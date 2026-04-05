@@ -1,5 +1,6 @@
 const Medicine = require("../models/Medicine");
 const redis = require("../config/redis");
+const mongoose = require("mongoose"); // ✅ ADD THIS LINE
 
 // CREATE
 exports.createMedicine = async (data, file) => {
@@ -10,11 +11,6 @@ exports.createMedicine = async (data, file) => {
 
   const medicine = new Medicine(data);
   const saved = await medicine.save();
-
-  // ✅ CLEAR CACHE AFTER CREATE
-  // await redis.del("medicines:all");
-  // if (data.category) await redis.del(`medicines:category:${data.category}`);
-  // if (data.supplierId) await redis.del(`medicines:count:${data.supplierId}`);
 
   return saved;
 };
@@ -63,7 +59,6 @@ exports.updateMedicine = async (id, data, file) => {
     new: true,
   });
 
-  // ✅ CLEAR CACHE AFTER UPDATE
   await redis.del("medicines:all");
   if (updated?.category) await redis.del(`medicines:category:${updated.category}`);
   if (updated?.supplierId) await redis.del(`medicines:count:${updated.supplierId}`);
@@ -76,7 +71,6 @@ exports.updateMedicine = async (id, data, file) => {
 exports.deleteMedicine = async (id) => {
   const deleted = await Medicine.findByIdAndDelete(id);
 
-  // ✅ CLEAR CACHE AFTER DELETE
   await redis.del("medicines:all");
   if (deleted?.category) await redis.del(`medicines:category:${deleted.category}`);
   if (deleted?.supplierId) await redis.del(`medicines:count:${deleted.supplierId}`);
@@ -131,7 +125,7 @@ exports.getMedicineCountBySupplier = async (supplierId) => {
     console.log("Count Cache MISS ❌");
 
     const count = await Medicine.countDocuments({
-      supplierId
+      supplierId: new mongoose.Types.ObjectId(supplierId), // ✅ FIX HERE
     });
 
     const result = { totalMedicines: count };
@@ -143,7 +137,23 @@ exports.getMedicineCountBySupplier = async (supplierId) => {
   } catch (error) {
     console.error("Redis error:", error.message);
 
-    const count = await Medicine.countDocuments({ supplierId });
+    const count = await Medicine.countDocuments({
+      supplierId: new mongoose.Types.ObjectId(supplierId),
+    });
+
     return { totalMedicines: count };
+  }
+};
+
+
+// ✅ FINAL FIXED FUNCTION
+exports.getMedicinesBySupplier = async (supplierId) => {
+  try {
+    return await Medicine.find({
+      supplierId: new mongoose.Types.ObjectId(supplierId), // 🔥 MAIN FIX
+    }).sort({ createdAt: -1 });
+  } catch (error) {
+    console.error("Error fetching supplier medicines:", error.message);
+    throw error;
   }
 };

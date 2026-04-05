@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Pencil, Trash2, Package, Plus, X } from "lucide-react";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import "./myMedicine.css";
 import { API_URL } from "../../services/api";
-
 
 const MyMedicine = () => {
   const navigate = useNavigate();
@@ -12,25 +11,46 @@ const MyMedicine = () => {
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // ✅ GET USER ID FROM TOKEN (no login change needed)
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.userId;
+    } catch (err) {
+      console.error("Invalid token");
+      return null;
+    }
+  };
+
+  const supplierId = getUserIdFromToken();
+
   // =====================
   // FETCH MEDICINES
   // =====================
   const fetchMedicines = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/medicines`);
+
+      const res = await axios.get(
+        `${API_URL}/medicines/supplier/${supplierId}`
+      );
+
       setMedicines(res.data);
     } catch (error) {
-      console.error(error);
-      alert("Failed to fetch medicines");
+      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMedicines();
-  }, []);
+    if (supplierId) {
+      fetchMedicines();
+    }
+  }, [supplierId]);
 
   // =====================
   // DELETE
@@ -46,7 +66,6 @@ const MyMedicine = () => {
       alert("Delete failed");
     }
   };
-
 
   return (
     <>
@@ -118,7 +137,6 @@ const MyMedicine = () => {
           ))
         )}
       </div>
-
     </>
   );
 };

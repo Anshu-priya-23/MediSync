@@ -27,18 +27,19 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET ONE
-router.get("/:id", async (req, res) => {
+// GET MEDICINES BY SUPPLIER
+router.get("/supplier/:supplierId", async (req, res) => {
   try {
-    const medicine = await medicineService.getMedicineById(req.params.id);
-    if (!medicine) {
-      return res.status(404).json({ message: "Not found" });
-    }
-    res.json(medicine);
+    const medicines = await medicineService.getMedicinesBySupplier(
+      req.params.supplierId
+    );
+    res.json(medicines);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
+
 
 // UPDATE
 router.put("/:id", upload.single("image"), async (req, res) => {
@@ -103,6 +104,19 @@ router.get("/count/:supplierId", async (req, res) => {
       );
 
     res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET ONE
+router.get("/:id", async (req, res) => {
+  try {
+    const medicine = await medicineService.getMedicineById(req.params.id);
+    if (!medicine) {
+      return res.status(404).json({ message: "Not found" });
+    }
+    res.json(medicine);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

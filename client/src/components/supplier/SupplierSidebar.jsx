@@ -5,8 +5,7 @@ import {
   PlusCircle,
   Pill,
   ShoppingCart,
-  BarChart3,
-  User,
+  Settings, // ✅ changed icon
   LogOut
 } from "lucide-react";
 
@@ -14,10 +13,9 @@ import "./supplier.css";
 
 const SupplierSidebar = () => {
 
-  const navigate = useNavigate();   // 🔥 navigation hook
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    // optional: clear auth
     localStorage.removeItem("token");
     navigate("/login");
   };
@@ -44,15 +42,10 @@ const SupplierSidebar = () => {
       path: "/supplier-dashboard/orders",
       icon: <ShoppingCart size={18} />
     },
-    // {
-    //   name: "Performance",
-    //   path: "/supplier-dashboard/performance",
-    //   icon: <BarChart3 size={18} />
-    // },
     {
-      name: "Profile",
+      name: "Settings", // ✅ changed name
       path: "/supplier-dashboard/profile",
-      icon: <User size={18} />
+      icon: <Settings size={18} /> // ✅ changed icon
     },
   ];
 
