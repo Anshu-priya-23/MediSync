@@ -2,6 +2,7 @@ import "./HeroSection.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../services/api";
 
 const HeroSection = () => {
   const [query, setQuery] = useState("");
@@ -15,7 +16,7 @@ const HeroSection = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:5002/api/medicines");
+        const res = await axios.get(`${API_URL}/medicines`);
         setAllMedicines(res.data || []);
       } catch (err) {
         console.log("Error fetching medicines:", err);
