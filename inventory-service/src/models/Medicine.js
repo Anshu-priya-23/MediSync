@@ -9,14 +9,17 @@ const medicineSchema = new mongoose.Schema(
     stock: { type: Number },
     minThreshold: { type: Number },
     expiryDate: { type: Date },
+
+    addedDate: { type: Date }, // ✅ NEW FIELD ADDED
+
     batchNumber: { type: String },
     description: { type: String },
     image: { type: String },
     supplierId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
     version: { type: Number, default: 0 }
   },
   { timestamps: true }

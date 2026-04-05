@@ -5,8 +5,14 @@ const mongoose = require("mongoose"); // ✅ ADD THIS LINE
 // CREATE
 exports.createMedicine = async (data, file) => {
   console.log(data);
+
   if (file) {
     data.image = file.filename;
+  }
+
+  // ✅ NEW: handle addedDate
+  if (data.addedDate) {
+    data.addedDate = new Date(data.addedDate);
   }
 
   const medicine = new Medicine(data);
@@ -53,6 +59,11 @@ exports.getMedicineById = async (id) => {
 exports.updateMedicine = async (id, data, file) => {
   if (file) {
     data.image = file.filename;
+  }
+
+  // ✅ NEW: handle addedDate
+  if (data.addedDate) {
+    data.addedDate = new Date(data.addedDate);
   }
 
   const updated = await Medicine.findByIdAndUpdate(id, data, {
@@ -125,7 +136,7 @@ exports.getMedicineCountBySupplier = async (supplierId) => {
     console.log("Count Cache MISS ❌");
 
     const count = await Medicine.countDocuments({
-      supplierId: new mongoose.Types.ObjectId(supplierId), // ✅ FIX HERE
+      supplierId: new mongoose.Types.ObjectId(supplierId),
     });
 
     const result = { totalMedicines: count };
@@ -150,7 +161,7 @@ exports.getMedicineCountBySupplier = async (supplierId) => {
 exports.getMedicinesBySupplier = async (supplierId) => {
   try {
     return await Medicine.find({
-      supplierId: new mongoose.Types.ObjectId(supplierId), // 🔥 MAIN FIX
+      supplierId: new mongoose.Types.ObjectId(supplierId),
     }).sort({ createdAt: -1 });
   } catch (error) {
     console.error("Error fetching supplier medicines:", error.message);
