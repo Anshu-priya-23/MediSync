@@ -9,7 +9,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 5rem; /* Reduced vertical padding for a thinner look */
+    padding: 0.5rem 5rem;
     background: #ffffff;
     border-bottom: 1px solid #f0f0f0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -22,7 +22,6 @@
 .logo-text-teal-small { color: #24aeb1; font-size: 1.6rem; font-weight: 800; }
 .logo-text-dark-small { color: #242c44; font-size: 1.6rem; font-weight: 800; }
 
-/* --- PROFILE SECTION ALIGNMENT --- */
 .nav-links-right {
     display: flex;
     align-items: center;
@@ -34,14 +33,41 @@
     gap: 12px;
 }
 
+.cart-quick-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #ecf8f6;
+    color: #17564f;
+    border: 1px solid #bde8e2;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.cart-quick-badge {
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #24aeb1;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+}
+
 .welcome-text-sleek {
     color: #333;
-    font-size: 16px; /* Optimized font size for thin bar */
+    font-size: 16px;
     font-weight: 600;
     cursor: default;
 }
 
-/* --- THE SLEEK ENCIRCLED INITIAL --- */
 .avatar-link {
     text-decoration: none;
     transition: transform 0.2s ease;
@@ -52,8 +78,8 @@
 }
 
 .avatar-circle-sleek {
-    width: 40px;  /* Balanced size for thin header */
-    height: 40px; 
+    width: 40px;
+    height: 40px;
     background: #24aeb1;
     color: #fff;
     border-radius: 50%;
@@ -80,10 +106,9 @@
     background-color: #1e8f92;
 }
 
-/* --- CATEGORY BAR --- */
 .category-navbar {
     background: #24aeb1;
-    padding: 8px 60px; /* Thinned category bar as well */
+    padding: 8px 60px;
 }
 
 .category-container {
@@ -95,7 +120,6 @@
     padding: 0;
 }
 
-/* --- THE FIX: Dropdown Anchor --- */
 .category-item {
     color: white;
     font-weight: 600;
@@ -104,7 +128,7 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    position: relative; /* CRITICAL: Tells the dropdown where to attach */
+    position: relative;
     transition: opacity 0.2s ease;
 }
 
@@ -112,43 +136,86 @@
     opacity: 0.9;
 }
 
-/* --- DROPDOWN MENU STYLES --- */
 .dropdown-menu {
-    display: none;             /* Hidden by default */
-    position: absolute;        /* Take it out of the normal layout flow */
-    top: 100%;                 /* Push it right below the nav bar */
+    display: none;
+    position: absolute;
+    top: 100%;
     left: 0;
-    /* margin-top: 8px; <--- REMOVED THIS SO YOUR MOUSE CAN REACH THE MENU */
-    background-color: #ffffff; /* Clean white background */
+    background-color: #ffffff;
     min-width: 220px;
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.15); /* Soft modern shadow */
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.15);
     border-radius: 8px;
     padding: 10px 0;
-    z-index: 1000;             /* Ensure it stays on top of page content */
+    z-index: 1000;
     flex-direction: column;
-    overflow: hidden;          /* Keep rounded corners neat */
+    overflow: hidden;
 }
 
-/* Show the menu when hovering over "All Categories" */
 .category-item:hover .dropdown-menu {
-    display: flex; 
+    display: flex;
 }
 
-/* Style the text inside the dropdown so it looks sleek */
 .dropdown-menu a {
     padding: 12px 20px;
-    color: #4b5563;            /* Dark gray text */
+    color: #4b5563;
     font-weight: 600;
     text-decoration: none;
     transition: all 0.2s ease;
 }
 
 .dropdown-menu a:hover {
-    background-color: #f8fafc; /* Very light gray hover effect */
-    color: #24aeb1;            /* Matches your exact MediSync teal */
-    padding-left: 25px;        /* Premium slide-right animation */
+    background-color: #f8fafc;
+    color: #24aeb1;
+    padding-left: 25px;
 }
 
 .dropdown-menu p {
-    margin: 0;                 /* Remove default paragraph margins */
+    margin: 0;
+}
+
+@media (max-width: 980px) {
+    .nav-container-white-thin {
+        padding: 0.45rem 1rem;
+    }
+
+    .welcome-text-sleek {
+        display: none;
+    }
+
+    .category-navbar {
+        padding: 8px 12px;
+    }
+
+    .category-container {
+        justify-content: flex-start;
+        gap: 20px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .category-container::-webkit-scrollbar {
+        height: 4px;
+    }
+}
+
+@media (max-width: 640px) {
+    .profile-section-static {
+        gap: 8px;
+    }
+
+    .cart-quick-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .avatar-circle-sleek {
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+    }
+
+    .logo-text-teal-small,
+    .logo-text-dark-small {
+        font-size: 1.4rem;
+    }
 }

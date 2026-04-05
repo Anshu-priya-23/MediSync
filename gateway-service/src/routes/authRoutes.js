@@ -1,12 +1,15 @@
-const express = require('express');
-const proxy = require('express-http-proxy');
-const router = express.Router();
+const express = require("express");
+const proxy = require("express-http-proxy");
+const { buildServiceRegistry } = require("../config/serviceRegistry");
 
-// Forward to Auth Service (Port 5001)
-router.use('/', proxy('http://127.0.0.1:5001', {
-    proxyReqPathResolver: (req) => {
-        return `/api/auth${req.url}`; // Ensures correct pathing
-    }
-}));
+const router = express.Router();
+const services = buildServiceRegistry();
+
+router.use(
+  "/",
+  proxy(services.auth, {
+    proxyReqPathResolver: (req) => `/api/auth${req.url}`,
+  })
+);
 
 module.exports = router;
