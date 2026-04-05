@@ -12,9 +12,15 @@ const AddMedicine = () => {
     price: "",
     stock: "",
     threshold: "",
+<<<<<<< HEAD
     expiryDate: "",
     entryDate: "",
     batchNumber: "",
+=======
+    expiry: "",
+    addedDate: "", // ✅ NEW FIELD
+    batch: "",
+>>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
     description: "",
     image: null,
   });
@@ -48,9 +54,19 @@ const AddMedicine = () => {
         price: data.price || "",
         stock: data.stock || "",
         threshold: data.minThreshold || "",
+<<<<<<< HEAD
         expiryDate: data.expiryDate?.split("T")[0] || "",
         entryDate: data.entryDate?.split("T")[0] || "",
         batchNumber: data.batchNumber || "",
+=======
+        expiry: data.expiryDate
+          ? data.expiryDate.split("T")[0]
+          : "",
+        addedDate: data.addedDate   // ✅ NEW
+          ? data.addedDate.split("T")[0]
+          : "",
+        batch: data.batchNumber || "",
+>>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
         description: data.description || "",
         image: null,
       });
@@ -72,6 +88,7 @@ const AddMedicine = () => {
       if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
+<<<<<<< HEAD
 
   const validateForm = () => {
     const err = {};
@@ -86,6 +103,9 @@ const AddMedicine = () => {
     return err;
   };
 
+=======
+  
+>>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
   const getUserIdFromToken = () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
@@ -119,6 +139,7 @@ const AddMedicine = () => {
       form.append("price", formData.price);
       form.append("stock", formData.stock);
       form.append("minThreshold", formData.threshold);
+<<<<<<< HEAD
       form.append("expiryDate", formData.expiryDate);
       form.append("entryDate", formData.entryDate);
       form.append("batchNumber", formData.batchNumber);
@@ -128,11 +149,31 @@ const AddMedicine = () => {
 
       if (id) {
         await axios.put(`${API_URL}/medicines/${id}`, form, {
+=======
+      form.append("expiryDate", formData.expiry);
+      form.append("addedDate", formData.addedDate); // ✅ NEW
+      form.append("batchNumber", formData.batch);
+      form.append("description", formData.description);
+      form.append("supplierId", supplierId);
+
+      if (formData.image) {
+        form.append("image", formData.image);
+      }
+
+      let res;
+
+      if (id) {
+        res = await axios.put(`${API_URL}/medicines/${id}`, form, {
+>>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
           headers: { "Content-Type": "multipart/form-data" },
         });
         alert("Medicine updated successfully ✅");
       } else {
+<<<<<<< HEAD
         await axios.post(`${API_URL}/medicines`, form, {
+=======
+        res = await axios.post(`${API_URL}/medicines`, form, {
+>>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
           headers: { "Content-Type": "multipart/form-data" },
         });
         alert("Medicine added successfully ✅");
@@ -153,9 +194,15 @@ const AddMedicine = () => {
       price: "",
       stock: "",
       threshold: "",
+<<<<<<< HEAD
       expiryDate: "",
       entryDate: "",
       batchNumber: "",
+=======
+      expiry: "",
+      addedDate: "", // ✅ NEW
+      batch: "",
+>>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
       description: "",
       image: null,
     });
@@ -264,6 +311,34 @@ const AddMedicine = () => {
               />
             </div>
 
+<<<<<<< HEAD
+=======
+{/* EXPIRY */}
+<div>
+  <label className="hint-label">Expiry Date</label>
+  <input
+    type="date"
+    name="expiry"
+    className="add-input"
+    value={formData.expiry}
+    onChange={handleChange}
+  />
+</div>
+
+{/* ADDED DATE */}
+<div>
+  <label className="hint-label">Added Date</label>
+  <input
+    type="date"
+    name="addedDate"
+    className="add-input"
+    value={formData.addedDate}
+    onChange={handleChange}
+  />
+</div>
+
+            {/* BATCH */}
+>>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
             <div>
               <label className="add-label">Batch Number</label>
               <input
@@ -296,9 +371,30 @@ const AddMedicine = () => {
           </div>
 
           <div className="add-form-actions">
+<<<<<<< HEAD
             <button type="button" onClick={handleCancel} className="add-btn-cancel">Cancel</button>
             <button type="submit" disabled={loading} className="add-btn-save">
               {loading ? "Saving..." : id ? "Update Medicine" : "Save Medicine"}
+=======
+            <button
+              type="button"
+              onClick={handleCancel}
+              className={`add-btn-cancel ${activeBtn === "cancel" ? "active-btn" : ""}`}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`add-btn-save ${activeBtn === "save" ? "active-btn" : ""}`}
+            >
+              {loading
+                ? "Saving..."
+                : id
+                  ? "Update Medicine"
+                  : "Save Medicine"}
+>>>>>>> e26f7a23f3d3e4f8e57a124ff6e38c49ca92df09
             </button>
           </div>
 
