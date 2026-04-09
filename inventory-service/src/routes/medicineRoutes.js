@@ -7,11 +7,41 @@ const upload = require("../config/multer");
 // CREATE
 router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const medicine = await medicineService.createMedicine(
-      req.body,
-      req.file
-    );
+    const medicine = await medicineService.createMedicine(req.body, req.file);
     res.status(201).json(medicine);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// STOCK VERIFY
+router.post("/stock/verify", async (req, res) => {
+  try {
+    const result = await medicineService.verifyStock(req.body.items || []);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// STOCK DEDUCT
+router.post("/stock/deduct", async (req, res) => {
+  try {
+    const result = await medicineService.deductStock(req.body.items || []);
+    if (!result.ok) {
+      return res.status(409).json(result);
+    }
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// STOCK RELEASE (ROLLBACK)
+router.post("/stock/release", async (req, res) => {
+  try {
+    const result = await medicineService.releaseStock(req.body.items || []);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -30,25 +60,17 @@ router.get("/", async (req, res) => {
 // GET MEDICINES BY SUPPLIER
 router.get("/supplier/:supplierId", async (req, res) => {
   try {
-    const medicines = await medicineService.getMedicinesBySupplier(
-      req.params.supplierId
-    );
+    const medicines = await medicineService.getMedicinesBySupplier(req.params.supplierId);
     res.json(medicines);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-
-
 // UPDATE
 router.put("/:id", upload.single("image"), async (req, res) => {
   try {
-    const updated = await medicineService.updateMedicine(
-      req.params.id,
-      req.body,
-      req.file
-    );
+    const updated = await medicineService.updateMedicine(req.params.id, req.body, req.file);
 
     if (!updated) {
       return res.status(404).json({ message: "Not found" });
@@ -80,14 +102,7 @@ router.get("/category/:category", async (req, res) => {
   try {
     const { category } = req.params;
 
-    const medicines =
-      await medicineService.getMedicinesByCategory(category);
-
-    if (medicines.length === 0) {
-      return res.status(404).json({
-        message: "No medicines found for this category",
-      });
-    }
+    const medicines = await medicineService.getMedicinesByCategory(category);
 
     res.json(medicines);
   } catch (error) {
@@ -98,11 +113,7 @@ router.get("/category/:category", async (req, res) => {
 // GET MEDICINE COUNT FOR SUPPLIER
 router.get("/count/:supplierId", async (req, res) => {
   try {
-    const result =
-      await medicineService.getMedicineCountBySupplier(
-        req.params.supplierId
-      );
-
+    const result = await medicineService.getMedicineCountBySupplier(req.params.supplierId);
     res.json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
