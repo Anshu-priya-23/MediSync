@@ -1,0 +1,221 @@
+.navbar-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* --- THIN WHITE TOP NAV --- */
+.nav-container-white-thin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 5rem;
+    background: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.logo-link {
+    text-decoration: none;
+}
+
+.logo-text-teal-small { color: #24aeb1; font-size: 1.6rem; font-weight: 800; }
+.logo-text-dark-small { color: #242c44; font-size: 1.6rem; font-weight: 800; }
+
+.nav-links-right {
+    display: flex;
+    align-items: center;
+}
+
+.profile-section-static {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cart-quick-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #ecf8f6;
+    color: #17564f;
+    border: 1px solid #bde8e2;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.cart-quick-badge {
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #24aeb1;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+}
+
+.welcome-text-sleek {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: default;
+}
+
+.avatar-link {
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.avatar-link:hover {
+    transform: scale(1.05);
+}
+
+.avatar-circle-sleek {
+    width: 40px;
+    height: 40px;
+    background: #24aeb1;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    font-size: 17px;
+    box-shadow: 0 2px 5px rgba(36, 174, 177, 0.2);
+}
+
+.login-btn-teal-small {
+    padding: 6px 20px;
+    color: #fff;
+    background-color: #24aeb1;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.login-btn-teal-small:hover {
+    background-color: #1e8f92;
+}
+
+.category-navbar {
+    background: #24aeb1;
+    padding: 8px 60px;
+}
+
+.category-container {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.category-item {
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: opacity 0.2s ease;
+}
+
+.category-item:hover {
+    opacity: 0.9;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    min-width: 220px;
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 10px 0;
+    z-index: 1000;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.category-item:hover .dropdown-menu {
+    display: flex;
+}
+
+.dropdown-menu a {
+    padding: 12px 20px;
+    color: #4b5563;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f8fafc;
+    color: #24aeb1;
+    padding-left: 25px;
+}
+
+.dropdown-menu p {
+    margin: 0;
+}
+
+@media (max-width: 980px) {
+    .nav-container-white-thin {
+        padding: 0.45rem 1rem;
+    }
+
+    .welcome-text-sleek {
+        display: none;
+    }
+
+    .category-navbar {
+        padding: 8px 12px;
+    }
+
+    .category-container {
+        justify-content: flex-start;
+        gap: 20px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .category-container::-webkit-scrollbar {
+        height: 4px;
+    }
+}
+
+@media (max-width: 640px) {
+    .profile-section-static {
+        gap: 8px;
+    }
+
+    .cart-quick-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .avatar-circle-sleek {
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+    }
+
+    .logo-text-teal-small,
+    .logo-text-dark-small {
+        font-size: 1.4rem;
+    }
+}

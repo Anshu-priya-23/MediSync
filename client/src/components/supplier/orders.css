@@ -1,0 +1,98 @@
+/* ================= Orders Table Card ================= */
+
+.orders-table {
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+/* ================= Header ================= */
+
+.orders-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr 1fr 1fr 1fr;
+  padding: 20px 28px;
+  font-weight: 600;
+  color: #1f2d3d;
+  background: #f8fafc;   /* SAME AS ROWS */
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* ================= Rows ================= */
+
+.orders-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr 1fr 1fr 1fr;
+  padding: 20px 28px;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  transition: 0.2s ease;
+  background: #ffffff;
+}
+
+.orders-row:last-child {
+  border-bottom: none;
+}
+
+.orders-row:hover {
+  background: #f9fafb;
+}
+
+/* ================= Order ID ================= */
+
+.order-id {
+  color: #2cb1a5;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.order-id:hover {
+  text-decoration: underline;
+}
+
+/* ================= Numbers ================= */
+
+.returned {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.cancelled {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* ================= Status Badge ================= */
+
+.status-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Completed */
+.status-badge.completed {
+  background: #d1fae5;
+  color: #059669;
+}
+
+/* Returned */
+.status-badge.returned {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* Cancelled */
+.status-badge.cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Processing */
+.status-badge.processing {
+  background: #dbeafe;
+  color: #1d4ed8;
+}

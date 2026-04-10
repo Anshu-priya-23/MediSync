@@ -1,0 +1,61 @@
+/* ================= Layout ================= */
+
+.performance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+/* ================= Cards ================= */
+
+.performance-card {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 22px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.performance-card h3 {
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2d3d;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+/* ================= Progress Section ================= */
+
+.medicine-progress {
+  margin-bottom: 25px;
+}
+
+.medicine-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.medicine-info span:first-child {
+  color: #2cb1a5;
+  font-weight: 600;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #2cb1a5;
+  border-radius: 10px;
+  transition: 0.3s ease;
+}

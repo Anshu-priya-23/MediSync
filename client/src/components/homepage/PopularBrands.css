@@ -1,0 +1,83 @@
+.brands-section {
+  padding: 60px 60px;
+  background: #ffffff;   /* softer Netmeds mint */
+}
+
+/* Section Title */
+.brands-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 35px;
+  color: #222222;
+}
+
+/* Horizontal Scroll */
+.brands-row {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 15px;
+}
+
+.brands-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* Brand Card */
+.brand-card {
+  min-width: 190px;
+  text-align: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: 0.3s ease;
+}
+
+/* Brand Image Box */
+.brand-img-box {
+  background: linear-gradient(180deg, #eef9f9, #e3f6f6); /* softer mint gradient */
+  border-radius: 20px;
+  padding: 25px 20px;
+  position: relative;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border: 1px solid #e6f2f2;  /* subtle border like Netmeds */
+}
+
+/* Hover */
+.brand-card:hover .brand-img-box {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(36, 174, 177, 0.12);
+}
+
+/* Logo */
+.brand-img-box img {
+  max-width: 110px;
+  max-height: 70px;
+  object-fit: contain;
+}
+
+/* Discount Badge */
+.brand-discount {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #1a9b8f;   /* exact Netmeds green */
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 0;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+/* Brand Name */
+.brand-name {
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333333;
+}
