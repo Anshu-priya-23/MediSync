@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.00e243f5.css",
-    "main.js": "/static/js/main.bffea485.js",
+    "main.css": "/static/css/main.9e2b5236.css",
+    "main.js": "/static/js/main.c8be9ef9.js",
     "static/media/kidney.png": "/static/media/kidney.07a67a550dd80edffa86.png",
     "static/media/liver.png": "/static/media/liver.a45d31661694dfcccb0b.png",
     "static/media/derma.png": "/static/media/derma.def4fc87b66b7d9000d1.png",
@@ -10,11 +10,11 @@
     "static/media/bone.png": "/static/media/bone.ff6a7f42a0e9cee74763.png",
     "static/media/heart.png": "/static/media/heart.4fc51e21c31924c64372.png",
     "index.html": "/index.html",
-    "main.00e243f5.css.map": "/static/css/main.00e243f5.css.map",
-    "main.bffea485.js.map": "/static/js/main.bffea485.js.map"
+    "main.9e2b5236.css.map": "/static/css/main.9e2b5236.css.map",
+    "main.c8be9ef9.js.map": "/static/js/main.c8be9ef9.js.map"
   },
   "entrypoints": [
-    "static/css/main.00e243f5.css",
-    "static/js/main.bffea485.js"
+    "static/css/main.9e2b5236.css",
+    "static/js/main.c8be9ef9.js"
   ]
 }

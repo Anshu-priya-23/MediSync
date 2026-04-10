@@ -20,7 +20,8 @@ const inventoryService = {
      */
     getProductsByCategory: async (categoryName) => {
         try {
-            const response = await axios.get(`${API_URL}/medicines/category/${categoryName}`);
+            const safeCategory = encodeURIComponent(String(categoryName || "").trim());
+            const response = await axios.get(`${API_URL}/medicines/category/${safeCategory}`);
             return response.data;
         } catch (error) {
             console.error(`Error fetching products for category: ${categoryName}`, error);

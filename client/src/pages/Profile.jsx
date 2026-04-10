@@ -1,7 +1,9 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { fetchOrders } from "../services/orderService";
+import { CartContext } from "../context/CartContext";
+import toast from "react-hot-toast";
+import { cancelOrder, fetchOrders } from "../services/orderService";
 import {
   User,
   Mail,
@@ -16,15 +18,101 @@ import {
 } from "lucide-react";
 
 const formatMoney = (value) => `Rs ${Number(value || 0).toFixed(2)}`;
+const CANCELLABLE_STATUSES = new Set(["placed", "payment_pending", "confirmed", "ready_for_pickup"]);
+const IST_OFFSET_MINUTES = 5 * 60 + 30;
+
+const getOrderActivityTimestamp = (order) =>
+  new Date(order?.updatedAt || order?.placedAt || order?.createdAt || 0).getTime();
+
+const sortOrdersByActivity = (orders = []) =>
+  [...orders].sort((a, b) => getOrderActivityTimestamp(b) - getOrderActivityTimestamp(a));
+
+const getPickupSlotStartAt = (order) => {
+  const slotDateRaw = order?.pickupSlot?.date;
+  if (!slotDateRaw) {
+    return null;
+  }
+
+  const slotDate = new Date(slotDateRaw);
+  if (Number.isNaN(slotDate.getTime())) {
+    return null;
+  }
+
+  const label = String(order?.pickupSlot?.label || "");
+  const match = label.match(/(\d{1,2})\s*:\s*(\d{2})/);
+  if (!match) {
+    return slotDate;
+  }
+
+  const hasStoredTime =
+    slotDate.getUTCHours() !== 0 ||
+    slotDate.getUTCMinutes() !== 0 ||
+    slotDate.getUTCSeconds() !== 0 ||
+    slotDate.getUTCMilliseconds() !== 0;
+
+  if (hasStoredTime) {
+    return slotDate;
+  }
+
+  const startHour = Math.min(23, Math.max(0, Number(match[1])));
+  const startMinute = Math.min(59, Math.max(0, Number(match[2])));
+  const istPseudoDate = new Date(slotDate.getTime() + IST_OFFSET_MINUTES * 60 * 1000);
+  const year = istPseudoDate.getUTCFullYear();
+  const monthIndex = istPseudoDate.getUTCMonth();
+  const day = istPseudoDate.getUTCDate();
+
+  return new Date(
+    Date.UTC(year, monthIndex, day, startHour, startMinute, 0, 0) - IST_OFFSET_MINUTES * 60 * 1000
+  );
+};
+
+const getCancelAvailability = (order) => {
+  const status = String(order?.status || "").toLowerCase();
+  if (!CANCELLABLE_STATUSES.has(status)) {
+    if (status === "cancelled") {
+      return { canCancel: false, reason: "Order is already cancelled" };
+    }
+    return { canCancel: false, reason: "This order can no longer be cancelled" };
+  }
+
+  const slotStartAt = getPickupSlotStartAt(order);
+  if (!slotStartAt) {
+    return { canCancel: false, reason: "Pickup slot time unavailable" };
+  }
+
+  if (Date.now() >= slotStartAt.getTime()) {
+    return { canCancel: false, reason: "Cancellation closed after pickup slot start time" };
+  }
+
+  return { canCancel: true, reason: "" };
+};
+
+const getStatusPillStyle = (statusValue) => {
+  const status = String(statusValue || "").toLowerCase();
+  if (status === "cancelled" || status === "failed") {
+    return { ...styles.statusPill, color: "#b42335", background: "#fdecef" };
+  }
+  if (status === "confirmed" || status === "paid" || status === "picked_up") {
+    return { ...styles.statusPill, color: "#1e7a44", background: "#e7f8ef" };
+  }
+  if (status === "payment_pending" || status === "pending") {
+    return { ...styles.statusPill, color: "#9d6c08", background: "#fff6df" };
+  }
+  return styles.statusPill;
+};
 
 const Profile = () => {
   const { user, logout } = useContext(AuthContext);
+  const { addItem, refreshCart } = useContext(CartContext);
+  const location = useLocation();
   const navigate = useNavigate();
 
   const [allOrders, setAllOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState("");
   const [activeSection, setActiveSection] = useState("profile");
+  const [cancellingOrderId, setCancellingOrderId] = useState("");
+  const [reorderingOrderId, setReorderingOrderId] = useState("");
 
   const userName = user?.name || "Guest User";
   const firstLetter = userName.charAt(0).toUpperCase();
@@ -42,7 +130,7 @@ const Profile = () => {
     return "Recent Activity";
   }, [activeSection, user?.role]);
 
-  const recentOrders = useMemo(() => allOrders.slice(0, 2), [allOrders]);
+  const recentOrders = useMemo(() => sortOrdersByActivity(allOrders).slice(0, 2), [allOrders]);
 
   const uniqueAddresses = useMemo(() => {
     const addressByKey = new Map();
@@ -84,50 +172,46 @@ const Profile = () => {
     });
   }, [allOrders]);
 
-  useEffect(() => {
+  const loadOrders = useCallback(async () => {
     if (!user || user.role === "admin") {
       return;
     }
 
+    setOrdersLoading(true);
+    setOrdersError("");
+    try {
+      const items = await fetchOrders();
+      setAllOrders(sortOrdersByActivity(items));
+    } catch (error) {
+      setOrdersError(error.response?.data?.message || "Unable to load order history");
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
     let active = true;
 
-    const loadOrders = async () => {
-      setOrdersLoading(true);
-      setOrdersError("");
-      try {
-        const items = await fetchOrders();
-        if (active) {
-          const sortedOrders = [...items].sort((a, b) => {
-            const dateA = new Date(a?.placedAt || a?.createdAt || 0).getTime();
-            const dateB = new Date(b?.placedAt || b?.createdAt || 0).getTime();
-            return dateB - dateA;
-          });
-          setAllOrders(sortedOrders);
-        }
-      } catch (error) {
-        if (active) {
-          setOrdersError(error.response?.data?.message || "Unable to load order history");
-        }
-      } finally {
-        if (active) {
-          setOrdersLoading(false);
-        }
+    const load = async () => {
+      if (!active) {
+        return;
       }
+      await loadOrders();
     };
 
-    loadOrders();
+    load();
 
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [loadOrders]);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  const scrollToActivity = (section) => {
+  const scrollToActivity = useCallback((section) => {
     setActiveSection(section);
     const target = document.getElementById("order-history-block");
     if (target) {
@@ -135,6 +219,71 @@ const Profile = () => {
       window.setTimeout(() => {
         target.focus();
       }, 350);
+    }
+  }, []);
+
+  useEffect(() => {
+    const requestedSection = location.state?.activeSection;
+    if (!requestedSection || user?.role === "admin") {
+      return;
+    }
+
+    scrollToActivity(requestedSection);
+  }, [location.key, location.state, scrollToActivity, user?.role]);
+
+  const handleCancelOrder = async (order) => {
+    const orderId = order?.id || order?._id;
+    if (!orderId) {
+      toast.error("Unable to cancel this order");
+      return;
+    }
+
+    const availability = getCancelAvailability(order);
+    if (!availability.canCancel) {
+      toast.error(availability.reason || "This order cannot be cancelled");
+      return;
+    }
+
+    setCancellingOrderId(orderId);
+    try {
+      const updatedOrder = await cancelOrder(orderId, {
+        note: "Cancelled by user from profile page",
+      });
+
+      setAllOrders((previous) => {
+        const next = previous.map((existing) =>
+          String(existing.id || existing._id) === String(orderId) ? { ...existing, ...updatedOrder } : existing
+        );
+        return sortOrdersByActivity(next);
+      });
+      toast.success("Order cancelled successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to cancel this order");
+      await loadOrders();
+    } finally {
+      setCancellingOrderId("");
+    }
+  };
+
+  const handleOrderAgain = async (order) => {
+    const orderId = order?.id || order?._id;
+    if (!order?.items?.length || !orderId) {
+      toast.error("No medicines found in this order");
+      return;
+    }
+
+    setReorderingOrderId(orderId);
+    try {
+      for (const item of order.items) {
+        await addItem(item.medicineId, item.quantity);
+      }
+      await refreshCart();
+      toast.success("Items added to cart");
+      navigate("/cart");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to reorder now");
+    } finally {
+      setReorderingOrderId("");
     }
   };
 
@@ -253,7 +402,7 @@ const Profile = () => {
                         <strong style={styles.orderId}>{order.orderNumber || order.id}</strong>
                         <p style={styles.orderTime}>{new Date(order.placedAt || order.createdAt).toLocaleString()}</p>
                       </div>
-                      <span style={styles.statusPill}>{order.status}</span>
+                      <span style={getStatusPillStyle(order.status)}>{order.status}</span>
                     </div>
                     <div style={styles.orderMetaRow}>
                       <span>Items: {order.totalItems}</span>
@@ -261,6 +410,49 @@ const Profile = () => {
                     </div>
                     <p style={styles.orderMetaLine}>Payment: {order.paymentStatus}</p>
                     <p style={styles.orderMetaLine}>Pickup: {order.pickupSlot?.label || "N/A"}</p>
+                    {(() => {
+                      const orderId = order?.id || order?._id;
+                      const availability = getCancelAvailability(order);
+                      return (
+                        <div style={styles.orderActions}>
+                          <div style={styles.orderActionRow}>
+                            <button
+                              type="button"
+                              onClick={() => handleOrderAgain(order)}
+                              disabled={reorderingOrderId === orderId}
+                              style={
+                                reorderingOrderId === orderId
+                                  ? { ...styles.orderAgainButton, ...styles.cancelButtonDisabled }
+                                  : styles.orderAgainButton
+                              }
+                            >
+                              {reorderingOrderId === orderId ? "Adding..." : "Order Again"}
+                            </button>
+                          </div>
+                          <div style={styles.orderActionRow}>
+                          <button
+                            type="button"
+                            onClick={() => handleCancelOrder(order)}
+                            disabled={!availability.canCancel || cancellingOrderId === orderId}
+                            style={
+                              !availability.canCancel || cancellingOrderId === orderId
+                                ? { ...styles.cancelButton, ...styles.cancelButtonDisabled }
+                                : styles.cancelButton
+                            }
+                          >
+                            {cancellingOrderId === orderId
+                              ? "Cancelling..."
+                              : availability.canCancel
+                                ? "Cancel Order"
+                                : "Cancel Closed"}
+                          </button>
+                          </div>
+                          {!availability.canCancel ? (
+                            <p style={styles.cancelHint}>{availability.reason}</p>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
                   </article>
                 ))}
               </div>
@@ -282,7 +474,7 @@ const Profile = () => {
                         <strong style={styles.orderId}>{order.orderNumber || order.id}</strong>
                         <p style={styles.orderTime}>{new Date(order.placedAt || order.createdAt).toLocaleString()}</p>
                       </div>
-                      <span style={styles.statusPill}>{order.status}</span>
+                      <span style={getStatusPillStyle(order.status)}>{order.status}</span>
                     </div>
                     <div style={styles.orderMetaRow}>
                       <span>Items: {order.totalItems}</span>
@@ -290,6 +482,49 @@ const Profile = () => {
                     </div>
                     <p style={styles.orderMetaLine}>Payment: {order.paymentStatus}</p>
                     <p style={styles.orderMetaLine}>Pickup: {order.pickupSlot?.label || "N/A"}</p>
+                    {(() => {
+                      const orderId = order?.id || order?._id;
+                      const availability = getCancelAvailability(order);
+                      return (
+                        <div style={styles.orderActions}>
+                          <div style={styles.orderActionRow}>
+                            <button
+                              type="button"
+                              onClick={() => handleOrderAgain(order)}
+                              disabled={reorderingOrderId === orderId}
+                              style={
+                                reorderingOrderId === orderId
+                                  ? { ...styles.orderAgainButton, ...styles.cancelButtonDisabled }
+                                  : styles.orderAgainButton
+                              }
+                            >
+                              {reorderingOrderId === orderId ? "Adding..." : "Order Again"}
+                            </button>
+                          </div>
+                          <div style={styles.orderActionRow}>
+                          <button
+                            type="button"
+                            onClick={() => handleCancelOrder(order)}
+                            disabled={!availability.canCancel || cancellingOrderId === orderId}
+                            style={
+                              !availability.canCancel || cancellingOrderId === orderId
+                                ? { ...styles.cancelButton, ...styles.cancelButtonDisabled }
+                                : styles.cancelButton
+                            }
+                          >
+                            {cancellingOrderId === orderId
+                              ? "Cancelling..."
+                              : availability.canCancel
+                                ? "Cancel Order"
+                                : "Cancel Closed"}
+                          </button>
+                          </div>
+                          {!availability.canCancel ? (
+                            <p style={styles.cancelHint}>{availability.reason}</p>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
                   </article>
                 ))}
               </div>
@@ -509,6 +744,34 @@ const styles = {
     background: "#e9f4fa",
     textTransform: "capitalize",
   },
+  orderActions: { marginTop: "10px", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" },
+  orderActionRow: { display: "flex", gap: "8px", flexWrap: "wrap" },
+  orderAgainButton: {
+    border: "none",
+    borderRadius: "8px",
+    padding: "8px 12px",
+    backgroundColor: "#edf4f9",
+    color: "#1c3a54",
+    fontSize: "12px",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+  cancelButton: {
+    border: "none",
+    borderRadius: "8px",
+    padding: "8px 12px",
+    backgroundColor: "#feecee",
+    color: "#b42335",
+    fontSize: "12px",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+  cancelButtonDisabled: {
+    backgroundColor: "#f2f4f7",
+    color: "#8a94a5",
+    cursor: "not-allowed",
+  },
+  cancelHint: { margin: 0, color: "#8a94a5", fontSize: "11px" },
   orderMetaRow: { display: "flex", justifyContent: "space-between", marginTop: "8px", color: "#334e68", fontSize: "13px" },
   orderMetaLine: { margin: "4px 0 0", color: "#627d98", fontSize: "12px" },
   mutedText: { color: "#7b8794", margin: 0 },

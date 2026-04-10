@@ -41,30 +41,31 @@ const Footer = () => {
         <div className="footer-column">
           <h4>SOCIAL</h4>
 
-          <p className="social-item">
+          <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" className="social-item">
             <FaFacebookF className="social-icon" />
             Facebook
-          </p>
+          </a>
 
-          <p className="social-item">
+          <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" className="social-item">
             <FaTwitter className="social-icon" />
             Twitter
-          </p>
+          </a>
 
-          <p className="social-item">
+          <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" className="social-item">
             <FaLinkedinIn className="social-icon" />
             LinkedIn
-          </p>
+          </a>
 
-          <p className="social-item">
+          <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" className="social-item">
             <FaInstagram className="social-icon" />
             Instagram
-          </p>
+          </a>
 
-          <p className="social-item">
+          <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" className="social-item">
             <FaYoutube className="social-icon" />
             Youtube
-          </p>
+          </a>
+
         </div>
 
       </div>

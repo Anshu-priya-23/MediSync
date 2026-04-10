@@ -28,7 +28,7 @@ const Login = () => {
             
             // --- UPDATED ROUTING LOGIC ---
             if (res.data.user.role === 'admin') {
-                navigate('/admin-dashboard');
+                navigate('/AdminDashboard');
             } else if (res.data.user.role === 'pharmacist') {
                 navigate('/supplier-dashboard'); // <-- The hyphen is here!
             } else {

@@ -76,10 +76,16 @@ const PaymentPage = () => {
       return;
     }
 
+    const resolvedOrderId = order.id || order._id;
+    if (!resolvedOrderId) {
+      toast.error("Order reference is missing");
+      return;
+    }
+
     setPaying(true);
     try {
       const response = await createPayment({
-        orderId: order.id,
+        orderId: resolvedOrderId,
         orderNumber: order.orderNumber,
         amount: order.totalAmount,
         currency: order.currency || "INR",
@@ -93,17 +99,19 @@ const PaymentPage = () => {
       }
 
       if (String(payment?.status || "").toLowerCase() === "succeeded") {
-        setOrder((current) =>
-          current
-            ? {
-                ...current,
-                paymentStatus: "paid",
-                status: "confirmed",
-              }
-            : current
-        );
+        const updatedOrder = {
+          ...order,
+          paymentStatus: "paid",
+          status: "confirmed",
+        };
+        setOrder(updatedOrder);
         toast.success("Payment successful");
-        setTimeout(() => navigate("/orders"), 900);
+        navigate(`/orders/success/${resolvedOrderId}`, {
+          state: {
+            order: updatedOrder,
+            payment,
+          },
+        });
         return;
       }
 
@@ -178,8 +186,8 @@ const PaymentPage = () => {
                   <button className="btn-primary" type="button" disabled={paying} onClick={handlePay}>
                     {paying ? "Processing..." : `Pay ${formatMoney(order.totalAmount)}`}
                   </button>
-                  <Link to="/orders" className="btn-secondary">
-                    Back To Orders
+                  <Link to="/profile" state={{ activeSection: "orders" }} className="btn-secondary">
+                    Back To Order History
                   </Link>
                 </div>
               </section>
@@ -187,8 +195,8 @@ const PaymentPage = () => {
               <section className="side-card">
                 <h3 className="side-title">Payment Completed</h3>
                 <p className="note">This order is already paid and confirmed.</p>
-                <Link to="/orders" className="btn-primary">
-                  View Orders
+                <Link to="/profile" state={{ activeSection: "orders" }} className="btn-primary">
+                  View Order History
                 </Link>
               </section>
             )}

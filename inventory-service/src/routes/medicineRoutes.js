@@ -104,12 +104,6 @@ router.get("/category/:category", async (req, res) => {
 
     const medicines = await medicineService.getMedicinesByCategory(category);
 
-    if (medicines.length === 0) {
-      return res.status(404).json({
-        message: "No medicines found for this category",
-      });
-    }
-
     res.json(medicines);
   } catch (error) {
     res.status(500).json({ message: error.message });

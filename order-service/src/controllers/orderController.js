@@ -5,6 +5,10 @@ const eventPublisher = require("../services/eventPublisher");
 
 const CHECKOUT_LOCK_MS = 2 * 60 * 1000;
 const MAX_ITEM_QUANTITY = 20;
+const IST_OFFSET_MINUTES = 5 * 60 + 30;
+const SLOT_START_HOUR_IST = 9;
+const SLOT_LAST_START_HOUR_IST = 20;
+const SLOT_LEAD_TIME_MINUTES = 60;
 const ORDER_STATUS = [
   "placed",
   "payment_pending",
@@ -13,10 +17,36 @@ const ORDER_STATUS = [
   "picked_up",
   "cancelled",
 ];
+const USER_CANCELLABLE_STATUSES = ["placed", "payment_pending", "confirmed", "ready_for_pickup"];
 
 function toNumber(value, defaultValue = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : defaultValue;
+}
+
+function toIstPseudoDate(date) {
+  return new Date(date.getTime() + IST_OFFSET_MINUTES * 60 * 1000);
+}
+
+function getIstPartsFromDate(date) {
+  const istDate = toIstPseudoDate(date);
+  return {
+    year: istDate.getUTCFullYear(),
+    monthIndex: istDate.getUTCMonth(),
+    day: istDate.getUTCDate(),
+    hour: istDate.getUTCHours(),
+    minute: istDate.getUTCMinutes(),
+  };
+}
+
+function createUtcDateFromIstParts(year, monthIndex, day, hour, minute = 0) {
+  const utcMs = Date.UTC(year, monthIndex, day, hour, minute, 0, 0) - IST_OFFSET_MINUTES * 60 * 1000;
+  return new Date(utcMs);
+}
+
+function formatIstDateKey(date) {
+  const ist = getIstPartsFromDate(date);
+  return `${ist.year}-${String(ist.monthIndex + 1).padStart(2, "0")}-${String(ist.day).padStart(2, "0")}`;
 }
 
 function formatCart(cart) {
@@ -133,33 +163,56 @@ function generateOrderNumber() {
 
 function generatePickupSlots(days = 3) {
   const slots = [];
-  const windows = [
-    { startHour: 9, endHour: 11 },
-    { startHour: 11, endHour: 13 },
-    { startHour: 14, endHour: 16 },
-    { startHour: 16, endHour: 18 },
-    { startHour: 18, endHour: 20 },
-  ];
+  const nowUtc = new Date();
+  const cutoffUtc = new Date(nowUtc.getTime() + SLOT_LEAD_TIME_MINUTES * 60 * 1000);
+  const nowIst = getIstPartsFromDate(nowUtc);
 
   for (let dayOffset = 0; dayOffset < days; dayOffset += 1) {
-    const baseDate = new Date();
-    baseDate.setHours(0, 0, 0, 0);
-    baseDate.setDate(baseDate.getDate() + dayOffset);
+    for (let startHour = SLOT_START_HOUR_IST; startHour <= SLOT_LAST_START_HOUR_IST; startHour += 1) {
+      const endHour = startHour + 1;
+      const slotStartUtc = createUtcDateFromIstParts(
+        nowIst.year,
+        nowIst.monthIndex,
+        nowIst.day + dayOffset,
+        startHour,
+        0
+      );
 
-    windows.forEach((windowSlot, index) => {
-      const slotDate = new Date(baseDate);
-      const slotLabel = `${String(windowSlot.startHour).padStart(2, "0")}:00 - ${String(
-        windowSlot.endHour
-      ).padStart(2, "0")}:00`;
+      if (slotStartUtc.getTime() <= cutoffUtc.getTime()) {
+        continue;
+      }
+
       slots.push({
-        id: `${slotDate.toISOString().slice(0, 10)}-S${index + 1}`,
-        date: slotDate.toISOString(),
-        label: slotLabel,
+        id: `${formatIstDateKey(slotStartUtc)}-H${String(startHour).padStart(2, "0")}`,
+        date: slotStartUtc.toISOString(),
+        label: `${String(startHour).padStart(2, "0")}:00 - ${String(endHour).padStart(2, "0")}:00`,
       });
-    });
+    }
   }
 
   return slots;
+}
+
+function getPickupSlotStartAt(pickupSlot) {
+  if (!pickupSlot?.date) {
+    return null;
+  }
+
+  const baseDateUtc = new Date(pickupSlot.date);
+  if (Number.isNaN(baseDateUtc.getTime())) {
+    return null;
+  }
+
+  const label = String(pickupSlot.label || "");
+  const match = label.match(/(\d{1,2})\s*:\s*(\d{2})/);
+  if (!match) {
+    return baseDateUtc;
+  }
+
+  const startHour = Math.min(23, Math.max(0, Number(match[1])));
+  const startMinute = Math.min(59, Math.max(0, Number(match[2])));
+  const baseIst = getIstPartsFromDate(baseDateUtc);
+  return createUtcDateFromIstParts(baseIst.year, baseIst.monthIndex, baseIst.day, startHour, startMinute);
 }
 
 async function getOrCreateCart(userId) {
@@ -374,6 +427,13 @@ exports.checkout = async (req, res) => {
     });
   }
 
+  const selectedPickupStartAt = getPickupSlotStartAt(requestedSlot);
+  if (!selectedPickupStartAt || selectedPickupStartAt.getTime() <= Date.now()) {
+    return res.status(400).json({
+      message: "Selected pickup slot is not available. Please choose a future slot.",
+    });
+  }
+
   if (idempotencyKey) {
     const existingOrder = await Order.findOne({ userId, idempotencyKey }).sort({
       createdAt: -1,
@@ -471,7 +531,7 @@ exports.checkout = async (req, res) => {
         totalAmount,
         currency: cart.currency,
         pickupSlot: {
-          date: new Date(requestedSlot.date),
+          date: selectedPickupStartAt,
           label: requestedSlot.label,
         },
         address: selectedAddress,
@@ -546,6 +606,85 @@ exports.getOrderHistory = async (req, res) => {
   });
 };
 
+exports.cancelOrder = async (req, res) => {
+  const isPrivileged = ["admin", "pharmacist"].includes(req.user.role);
+  const filter = isPrivileged
+    ? { _id: req.params.orderId }
+    : { _id: req.params.orderId, userId: req.user.userId };
+
+  const order = await Order.findOne(filter);
+  if (!order) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  if (order.status === "cancelled") {
+    return res.status(200).json({
+      message: "Order is already cancelled",
+      order: formatOrder(order),
+    });
+  }
+
+  if (!USER_CANCELLABLE_STATUSES.includes(order.status)) {
+    return res.status(409).json({
+      message: `Order cannot be cancelled in '${order.status}' status`,
+    });
+  }
+
+  const pickupSlotStartAt = getPickupSlotStartAt(order.pickupSlot);
+  if (pickupSlotStartAt && Date.now() >= pickupSlotStartAt.getTime()) {
+    return res.status(409).json({
+      message: "Order can only be cancelled before the selected pickup slot time",
+      pickupSlotStartAt: pickupSlotStartAt.toISOString(),
+    });
+  }
+
+  if (["reserved", "deducted"].includes(order.inventoryStatus)) {
+    const releaseItems = order.items.map((item) => ({
+      medicineId: item.medicineId,
+      quantity: item.quantity,
+    }));
+
+    try {
+      const releaseResult = await inventoryClient.releaseStock(
+        releaseItems,
+        `cancel-${order.orderNumber || order._id}`
+      );
+
+      if (!releaseResult.ok) {
+        return res.status(409).json({
+          message: releaseResult.message || "Unable to release stock for cancellation",
+          unavailable: releaseResult.unavailable || [],
+        });
+      }
+    } catch (error) {
+      return res.status(502).json({
+        message: "Unable to cancel order right now. Please retry.",
+        details: error.message,
+      });
+    }
+
+    order.inventoryStatus = "released";
+  }
+
+  const previousStatus = order.status;
+  const note = String(req.body.note || "").trim();
+
+  order.status = "cancelled";
+  order.statusHistory.push({
+    status: "cancelled",
+    updatedBy: req.user.userId,
+    note: note || "Cancelled before pickup slot time",
+  });
+
+  await saveOrderSafely(order);
+  await eventPublisher.publishOrderStatusUpdated(order, previousStatus);
+
+  return res.status(200).json({
+    message: "Order cancelled successfully",
+    order: formatOrder(order),
+  });
+};
+
 exports.getOrderById = async (req, res) => {
   const isPrivileged = ["admin", "pharmacist"].includes(req.user.role);
   const filter = isPrivileged
@@ -616,7 +755,13 @@ exports.updatePaymentStatusInternal = async (req, res) => {
   const previousStatus = order.status;
   order.paymentStatus = paymentStatus;
 
-  if (requestedOrderStatus && ORDER_STATUS.includes(requestedOrderStatus)) {
+  if (
+    order.status === "cancelled" &&
+    requestedOrderStatus &&
+    requestedOrderStatus !== "cancelled"
+  ) {
+    // Keep cancelled orders terminal even if delayed events arrive.
+  } else if (requestedOrderStatus && ORDER_STATUS.includes(requestedOrderStatus)) {
     order.status = requestedOrderStatus;
   } else if (
     paymentStatus === "paid" &&

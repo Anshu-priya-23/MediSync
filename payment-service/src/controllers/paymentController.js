@@ -1,6 +1,7 @@
 const Payment = require("../models/Payment");
 const { processPayment } = require("../config/paymentGateway");
 const publisher = require("../events/publisher");
+const { enqueueIncomingOrderEvent } = require("../events/orderEventConsumer");
 
 function randomPaymentNumber() {
   const now = new Date();
@@ -41,9 +42,26 @@ function ensureOwnerOrPrivileged(req, payment) {
 }
 
 exports.handleOrderEvents = async (req, res) => {
+  const eventType = String(req.body?.eventType || "").trim();
+  if (!eventType) {
+    return res.status(400).json({
+      message: "eventType is required",
+    });
+  }
+
+  const accepted = await enqueueIncomingOrderEvent({
+    eventId: req.body?.eventId || req.headers["x-event-id"],
+    source: req.body?.source || "order-service",
+    eventType,
+    payload: req.body?.payload,
+    emittedAt: req.body?.emittedAt,
+  });
+
   return res.status(202).json({
     accepted: true,
-    message: "Event received",
+    duplicated: accepted.duplicated,
+    eventId: accepted.eventId,
+    message: accepted.duplicated ? "Duplicate event ignored" : "Event queued for async processing",
   });
 };
 

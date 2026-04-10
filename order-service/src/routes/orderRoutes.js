@@ -26,6 +26,7 @@ router.delete("/cart/items/:medicineId", asyncHandler(controller.removeFromCart)
 router.delete("/cart", asyncHandler(controller.clearCart));
 
 router.post("/checkout", asyncHandler(controller.checkout));
+router.patch("/:orderId/cancel", asyncHandler(controller.cancelOrder));
 
 router.get("/", asyncHandler(controller.getOrderHistory));
 router.get("/:orderId", asyncHandler(controller.getOrderById));

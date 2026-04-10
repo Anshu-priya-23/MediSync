@@ -17,7 +17,7 @@ import CategoryPage from "./pages/CategoryPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
-import Orders from "./pages/Orders";
+import OrderSuccess from "./pages/OrderSuccess";
 import PaymentPage from "./pages/PaymentPage";
 import AddMedicine from "./components/supplier/addMedicine";
 
@@ -72,11 +72,52 @@ function Layout() {
         />
 
         <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/profile" replace state={{ activeSection: "orders" }} />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/orders/success/:orderId"
+          element={
+            <ProtectedRoute>
+              <OrderSuccess />
+            </ProtectedRoute>
+          }
+        />
 
-          path="/admin-dashboard/*"
+        <Route
+          path="/payments/:orderId"
+          element={
+            <ProtectedRoute>
+              <PaymentPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute adminOnly={true}>
               <AdminDashboard />
@@ -100,7 +141,12 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <Layout />
         </Router>
       </CartProvider>

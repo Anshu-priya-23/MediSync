@@ -5,6 +5,54 @@ import { CartContext } from "../context/CartContext";
 import { checkoutCart, fetchPickupSlots } from "../services/orderService";
 import "./orderFlow.css";
 
+const IST_TIME_ZONE = "Asia/Kolkata";
+const IST_OFFSET_MINUTES = 5 * 60 + 30;
+const SLOT_LEAD_TIME_MINUTES = 60;
+
+const toIstDateParts = (date) => {
+  const istPseudoDate = new Date(date.getTime() + IST_OFFSET_MINUTES * 60 * 1000);
+  return {
+    year: istPseudoDate.getUTCFullYear(),
+    monthIndex: istPseudoDate.getUTCMonth(),
+    day: istPseudoDate.getUTCDate(),
+  };
+};
+
+const createUtcDateFromIstParts = (year, monthIndex, day, hour, minute = 0) =>
+  new Date(Date.UTC(year, monthIndex, day, hour, minute, 0, 0) - IST_OFFSET_MINUTES * 60 * 1000);
+
+const getSlotStartAt = (slot) => {
+  const rawDate = slot?.date;
+  if (!rawDate) {
+    return null;
+  }
+
+  const baseDate = new Date(rawDate);
+  if (Number.isNaN(baseDate.getTime())) {
+    return null;
+  }
+
+  const label = String(slot?.label || "");
+  const match = label.match(/(\d{1,2})\s*:\s*(\d{2})/);
+  if (!match) {
+    return baseDate;
+  }
+
+  const startHour = Math.min(23, Math.max(0, Number(match[1])));
+  const startMinute = Math.min(59, Math.max(0, Number(match[2])));
+  const istParts = toIstDateParts(baseDate);
+  return createUtcDateFromIstParts(istParts.year, istParts.monthIndex, istParts.day, startHour, startMinute);
+};
+
+const toFutureIstSlots = (items) => {
+  const cutoffMs = Date.now() + SLOT_LEAD_TIME_MINUTES * 60 * 1000;
+
+  return (Array.isArray(items) ? items : [])
+    .map((slot) => ({ ...slot, _slotStartAt: getSlotStartAt(slot) }))
+    .filter((slot) => slot._slotStartAt && slot._slotStartAt.getTime() > cutoffMs)
+    .sort((a, b) => a._slotStartAt.getTime() - b._slotStartAt.getTime());
+};
+
 const Checkout = () => {
   const { cart, refreshCart } = useContext(CartContext);
   const location = useLocation();
@@ -37,10 +85,9 @@ const Checkout = () => {
           return;
         }
 
-        setSlots(items);
-        if (items.length) {
-          setSlotId(items[0].id);
-        }
+        const futureSlots = toFutureIstSlots(items);
+        setSlots(futureSlots);
+        setSlotId(futureSlots[0]?.id || "");
       } catch (err) {
         if (active) {
           toast.error(err.response?.data?.message || "Unable to load pickup slots");
@@ -135,7 +182,7 @@ const Checkout = () => {
               <p className="cart-muted" style={{ margin: 0 }}>
                 Loading slots...
               </p>
-            ) : (
+            ) : slots.length ? (
               <select
                 className="form-select"
                 value={slotId}
@@ -143,10 +190,17 @@ const Checkout = () => {
               >
                 {slots.map((slot) => (
                   <option key={slot.id} value={slot.id}>
-                    {new Date(slot.date).toLocaleDateString("en-IN")} | {slot.label}
+                    {(slot._slotStartAt || new Date(slot.date)).toLocaleDateString("en-IN", {
+                      timeZone: IST_TIME_ZONE,
+                    })}{" "}
+                    | {slot.label}
                   </option>
                 ))}
               </select>
+            ) : (
+              <p className="cart-muted" style={{ margin: 0 }}>
+                No future pickup slots are available right now. Please try again shortly.
+              </p>
             )}
           </section>
 
