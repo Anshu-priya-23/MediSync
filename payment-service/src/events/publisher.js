@@ -173,7 +173,12 @@ async function processOutboxTick() {
 
 async function publishPaymentSucceeded(payment) {
   try {
-    await enqueueSyncOrderPaymentStatus(payment.orderId, "paid", "confirmed", {
+    const finalPaymentStatus = payment.method === 'cod' ? 'pending' : 'paid';
+    
+    // 🚀 ADD THIS LINE to see what is actually happening:
+    console.log(`[DEBUG] Publishing Payment! Method: ${payment.method} | Sending Status to Order Service: ${finalPaymentStatus}`);
+
+    await enqueueSyncOrderPaymentStatus(payment.orderId, finalPaymentStatus, "confirmed", {
       paymentId: String(payment._id || ""),
       transactionRef: payment.transactionRef || "",
     });
@@ -181,7 +186,6 @@ async function publishPaymentSucceeded(payment) {
     console.warn("Outbox enqueue warning (payment success):", error.message);
   }
 }
-
 async function publishPaymentFailed(payment) {
   try {
     await enqueueSyncOrderPaymentStatus(payment.orderId, "failed", "payment_pending", {

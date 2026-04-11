@@ -2,6 +2,7 @@ const Payment = require("../models/Payment");
 const { processPayment } = require("../config/paymentGateway");
 const publisher = require("../events/publisher");
 const { enqueueIncomingOrderEvent } = require("../events/orderEventConsumer");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 function randomPaymentNumber() {
   const now = new Date();
@@ -70,7 +71,7 @@ exports.createPayment = async (req, res) => {
   const orderNumber = String(req.body.orderNumber || "").trim();
   const currency = String(req.body.currency || "INR").trim().toUpperCase();
   const amount = Number(req.body.amount || 0);
-  const method = String(req.body.method || "upi").trim().toLowerCase();
+  const method = String(req.body.method || "card").trim().toLowerCase();
 
   if (!orderId) {
     return res.status(400).json({ message: "orderId is required" });
@@ -112,27 +113,38 @@ exports.createPayment = async (req, res) => {
     ],
   });
 
-  const gatewayResult = await processPayment({
-    amount,
-    method,
-    forceStatus: req.body.forceStatus,
-  });
+  // 🚀 THE FIX: Isolate COD logic from Stripe Gateway logic
+  if (method === "cod") {
+    payment.status = "pending";
+    payment.gatewayStatus = "awaiting_delivery";
+    payment.transactionRef = `COD-${Date.now()}`;
+    payment.message = "Cash on delivery selected";
+    payment.paidAt = null;
+  } else {
+    // Regular flow for cards
+    const gatewayResult = await processPayment({
+      amount,
+      method,
+      forceStatus: req.body.forceStatus,
+    });
 
-  payment.status = gatewayResult.success ? "succeeded" : "failed";
-  payment.gatewayStatus = gatewayResult.gatewayStatus;
-  payment.transactionRef = gatewayResult.transactionRef;
-  payment.message = gatewayResult.message;
-  payment.paidAt = gatewayResult.success ? new Date() : null;
+    payment.status = gatewayResult.success ? "succeeded" : "failed";
+    payment.gatewayStatus = gatewayResult.gatewayStatus;
+    payment.transactionRef = gatewayResult.transactionRef || req.body.transactionRef;
+    payment.message = gatewayResult.message;
+    payment.paidAt = gatewayResult.success ? new Date() : null;
+  }
 
   payment.history.push({
     status: payment.status,
-    message: gatewayResult.message,
+    message: payment.message,
   });
 
   await payment.save();
 
   try {
-    if (payment.status === "succeeded") {
+    // 🚀 THE FIX: Trigger the 'Order Success' pipeline for both Paid items AND COD
+    if (payment.status === "succeeded" || method === "cod") {
       await publisher.publishPaymentSucceeded(payment);
     } else {
       await publisher.publishPaymentFailed(payment);
@@ -142,9 +154,30 @@ exports.createPayment = async (req, res) => {
   }
 
   return res.status(201).json({
-    message: gatewayResult.message,
+    message: payment.message,
     payment: formatPayment(payment),
   });
+};
+
+exports.createStripeIntent = async (req, res) => {
+  try {
+    const { amount, orderId } = req.body;
+    
+    // 🚀 THE FIX: Minimum amount bypass for test mode. 
+    // Forces minimum to Rs 50 so Stripe doesn't block small test orders
+    const finalAmount = amount < 50 ? 50 : amount;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(finalAmount * 100),
+      currency: "inr",
+      metadata: { orderId, userId: req.user.userId },
+    });
+
+    res.status(200).json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error("Stripe Intent Error:", error);
+    res.status(500).json({ message: error.message });
+  }
 };
 
 exports.syncStripePayment = async (req, res) => {
