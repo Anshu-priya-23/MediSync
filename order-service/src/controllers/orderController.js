@@ -258,6 +258,29 @@ async function saveOrderSafely(order) {
   }
 }
 
+async function releaseOrderInventoryIfNeeded(order, reference) {
+  if (!["reserved", "deducted"].includes(order.inventoryStatus)) {
+    return { ok: true, skipped: true };
+  }
+
+  const releaseItems = order.items.map((item) => ({
+    medicineId: item.medicineId,
+    quantity: item.quantity,
+  }));
+
+  const result = await inventoryClient.releaseStock(releaseItems, reference);
+  if (!result.ok) {
+    return {
+      ok: false,
+      message: result.message || "Unable to release stock for cancellation",
+      unavailable: result.unavailable || [],
+    };
+  }
+
+  order.inventoryStatus = "released";
+  return { ok: true };
+}
+
 exports.listMedicines = async (req, res) => {
   const medicines = await inventoryClient.fetchMedicines({
     q: req.query.q,
@@ -638,32 +661,22 @@ exports.cancelOrder = async (req, res) => {
     });
   }
 
-  if (["reserved", "deducted"].includes(order.inventoryStatus)) {
-    const releaseItems = order.items.map((item) => ({
-      medicineId: item.medicineId,
-      quantity: item.quantity,
-    }));
-
-    try {
-      const releaseResult = await inventoryClient.releaseStock(
-        releaseItems,
-        `cancel-${order.orderNumber || order._id}`
-      );
-
-      if (!releaseResult.ok) {
-        return res.status(409).json({
-          message: releaseResult.message || "Unable to release stock for cancellation",
-          unavailable: releaseResult.unavailable || [],
-        });
-      }
-    } catch (error) {
-      return res.status(502).json({
-        message: "Unable to cancel order right now. Please retry.",
-        details: error.message,
+  try {
+    const releaseResult = await releaseOrderInventoryIfNeeded(
+      order,
+      `cancel-${order.orderNumber || order._id}`
+    );
+    if (!releaseResult.ok) {
+      return res.status(409).json({
+        message: releaseResult.message,
+        unavailable: releaseResult.unavailable,
       });
     }
-
-    order.inventoryStatus = "released";
+  } catch (error) {
+    return res.status(502).json({
+      message: "Unable to cancel order right now. Please retry.",
+      details: error.message,
+    });
   }
 
   const previousStatus = order.status;
@@ -718,6 +731,26 @@ exports.updateOrderStatus = async (req, res) => {
   const previousStatus = order.status;
   if (previousStatus === nextStatus) {
     return res.status(200).json({ order: formatOrder(order) });
+  }
+
+  if (nextStatus === "cancelled") {
+    try {
+      const releaseResult = await releaseOrderInventoryIfNeeded(
+        order,
+        `cancel-${order.orderNumber || order._id}`
+      );
+      if (!releaseResult.ok) {
+        return res.status(409).json({
+          message: releaseResult.message,
+          unavailable: releaseResult.unavailable,
+        });
+      }
+    } catch (error) {
+      return res.status(502).json({
+        message: "Unable to cancel order right now. Please retry.",
+        details: error.message,
+      });
+    }
   }
 
   order.status = nextStatus;
