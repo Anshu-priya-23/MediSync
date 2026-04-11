@@ -41,6 +41,7 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     try {
       const nextCart = await fetchCart();
+      console.log(nextCart);
       const normalizedCart = nextCart || emptyCart;
       setCart(normalizedCart);
       return normalizedCart;
@@ -50,14 +51,14 @@ export const CartProvider = ({ children }) => {
   }, [user]);
 
   const addItem = useCallback(
-    async (medicineId, quantity = 1) => {
+    async (medicineId,supplierId, quantity = 1) => {
       if (!hasSession(user)) {
         throw new Error("Please login to manage cart");
       }
 
       setLoading(true);
       try {
-        const nextCart = await addCartItem({ medicineId, quantity });
+        const nextCart = await addCartItem({ medicineId,supplierId, quantity });
         const normalizedCart = nextCart || emptyCart;
         setCart(normalizedCart);
         return normalizedCart;

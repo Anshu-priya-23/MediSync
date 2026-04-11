@@ -297,10 +297,14 @@ exports.getCart = async (req, res) => {
 
 exports.addToCart = async (req, res) => {
   const medicineId = String(req.body.medicineId || "").trim();
+   const supplierId = String(req.body.supplierId || "").trim();
   const requestedQty = Math.max(1, Math.floor(toNumber(req.body.quantity, 1)));
 
   if (!medicineId) {
     return res.status(400).json({ message: "medicineId is required" });
+  }
+  if (!supplierId) {
+    return res.status(400).json({ message: "supplierId is required" });
   }
 
   if (requestedQty > MAX_ITEM_QUANTITY) {
@@ -326,6 +330,7 @@ exports.addToCart = async (req, res) => {
     } else {
       editableCart.items.push({
         medicineId,
+        supplierId,
         medicineName: medicine.name,
         category: medicine.category || "General",
         imageData: medicine.imageData || "",

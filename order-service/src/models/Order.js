@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const orderItemSchema = new mongoose.Schema(
   {
     medicineId: { type: String, required: true, trim: true },
+    supplierId: { type: String, required: true, trim: true },
     medicineName: { type: String, required: true, trim: true },
     category: { type: String, default: "General", trim: true },
     imageData: { type: String, default: "" },
@@ -32,6 +33,11 @@ const orderSchema = new mongoose.Schema(
       index: true,
     },
     userId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    supplierId: {
       type: String,
       required: true,
       index: true,

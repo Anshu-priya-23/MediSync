@@ -27,6 +27,8 @@ const ProductDetailPage = () => {
         setLoading(true);
         const data = await inventoryService.getProductById(urlId);
         setProduct(data);
+      console.log(product);
+
       } catch (error) {
         console.error("Error fetching product details:", error);
       } finally {
@@ -70,8 +72,9 @@ const ProductDetailPage = () => {
     }
 
     setAddingToCart(true);
+    console.log(product);
     try {
-      await addItem(product._id, quantity);
+      await addItem(product._id,product.supplierId, quantity);
       toast.success("Added to cart");
       navigate("/cart");
     } catch (error) {

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = (process.env.REACT_APP_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+const API_BASE_URL = ("http://localhost:5003").replace(/\/+$/, "");
 const INVENTORY_BASE_URL = (
   process.env.REACT_APP_INVENTORY_BASE_URL || process.env.REACT_APP_API_URL || "http://localhost:5002"
 ).replace(/\/+$/, "");

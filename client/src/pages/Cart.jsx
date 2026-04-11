@@ -7,6 +7,7 @@ import "./orderFlow.css";
 
 const Cart = () => {
   const { cart, updateItem, removeItem, clearCart, loading } = useContext(CartContext);
+  console.log(cart);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 

@@ -7,6 +7,11 @@ const cartItemSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    supplierId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     medicineName: {
       type: String,
       required: true,

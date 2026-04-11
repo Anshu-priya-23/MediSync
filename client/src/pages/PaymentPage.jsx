@@ -192,6 +192,7 @@ const PaymentPage = () => {
           fetchPaymentsByOrder(orderId),
         ]);
         if (!active) return;
+        console.log(orderData);
         setOrder(orderData);
         setPayments(paymentItems);
       } catch (err) {

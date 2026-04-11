@@ -67,6 +67,7 @@ exports.handleOrderEvents = async (req, res) => {
 };
 
 exports.createPayment = async (req, res) => {
+  console.log(req.body);
   const orderId = String(req.body.orderId || "").trim();
   const orderNumber = String(req.body.orderNumber || "").trim();
   const currency = String(req.body.currency || "INR").trim().toUpperCase();

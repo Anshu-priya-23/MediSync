@@ -16,6 +16,7 @@ export async function fetchCart() {
 }
 
 export async function addCartItem(payload) {
+  console.log(payload);
   const response = await api.post("/api/orders/cart/items", payload);
   return response.data?.cart;
 }
