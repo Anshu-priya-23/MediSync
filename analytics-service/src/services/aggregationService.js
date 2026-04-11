@@ -6,17 +6,42 @@ export const getDashboardData = async () => {
   try {
 
     let inventory = [];
+    let orders = [];
 
-    // ✅ SAFE FETCH INVENTORY
+    // ================= INVENTORY =================
+    // ================= INVENTORY =================
+try {
+  const res = await axios.get("http://localhost:5002/api/medicines");
+
+  console.log("🔥 RAW RESPONSE:", res.data); // DEBUG
+
+  // ✅ FORCE FIX
+  if (Array.isArray(res.data)) {
+    inventory = res.data;
+  } else if (Array.isArray(res.data.data)) {
+    inventory = res.data.data;
+  } else {
+    inventory = [];
+  }
+
+  console.log("📦 Inventory length:", inventory.length);
+
+} catch (err) {
+  console.log("❌ Inventory API ERROR:", err.message);
+  inventory = [];
+}
+    // ================= ORDERS =================
     try {
-      const res = await axios.get("http://localhost:5002/api/medicines");
-      inventory = Array.isArray(res.data) ? res.data : [];
+      const orderRes = await axios.get(
+        "http://localhost:5003/api/orders/analytics"
+      );
+      orders = orderRes.data?.items || [];
     } catch {
-      console.log("⚠️ Inventory API not available");
-      inventory = [];
+      console.log("⚠️ Orders API not available");
+      orders = [];
     }
 
-    // ✅ FETCH SETTINGS
+    // ================= SETTINGS =================
     let settings = null;
     try {
       settings = await Settings.findOne();
@@ -57,7 +82,16 @@ export const getDashboardData = async () => {
     const supplierSet = new Set();
 
     inventory.forEach(item => {
-      const supplier = item.supplier || "Unknown";
+      let supplier = "Unknown";
+
+      if (item.supplierId) {
+        const id =
+          typeof item.supplierId === "object"
+            ? item.supplierId.toString()
+            : item.supplierId;
+
+        supplier = `Supplier ${id.slice(-4)}`;
+      }
 
       supplierSet.add(supplier);
 
@@ -105,6 +139,17 @@ export const getDashboardData = async () => {
       trendMap[month].stock += item.stock ?? 0;
     });
 
+    orders.forEach(order => {
+      const date = new Date(order.placedAt || order.createdAt || new Date());
+      const month = date.toLocaleString("default", { month: "short" });
+
+      if (!trendMap[month]) {
+        trendMap[month] = { stock: 0, orders: 0 };
+      }
+
+      trendMap[month].orders += 1;
+    });
+
     const trendData = Object.entries(trendMap).map(
       ([month, value]) => ({
         month,
@@ -113,7 +158,7 @@ export const getDashboardData = async () => {
       })
     );
 
-    // ✅ FINAL RESPONSE
+    // ================= FINAL =================
     return {
       cards: {
         totalSuppliers,
@@ -129,8 +174,6 @@ export const getDashboardData = async () => {
     };
 
   } catch (err) {
-
-    // ✅ CRITICAL FIX (NO CRASH)
     return {
       cards: {
         totalSuppliers: 0,

@@ -17,33 +17,32 @@ const SupplierManagement = () => {
       const res = await axios.get(API);
       setSuppliers(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching suppliers:", err);
     }
   };
 
   return (
     <div className="supplier-page">
 
-      {/* Header */}
+      {/* HEADER */}
       <div className="supplier-header">
         <h2>Suppliers</h2>
       </div>
 
-      {/* Table */}
+      {/* TABLE */}
       <div className="supplier-table-container">
         <table>
           <thead>
             <tr>
               <th>Supplier ID</th>
               <th>Supplier Name</th>
-              <th>Email</th>
             </tr>
           </thead>
 
           <tbody>
             {suppliers.length === 0 ? (
               <tr>
-                <td colSpan="3" className="empty">
+                <td colSpan="2" className="empty">
                   No suppliers found
                 </td>
               </tr>
@@ -52,7 +51,6 @@ const SupplierManagement = () => {
                 <tr key={supplier._id || index}>
                   <td>{supplier._id}</td>
                   <td>{supplier.name}</td>
-                  <td>{supplier.email || "-"}</td>
                 </tr>
               ))
             )}

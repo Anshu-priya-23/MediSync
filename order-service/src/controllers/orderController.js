@@ -607,7 +607,7 @@ exports.getOrderHistory = async (req, res) => {
 };
 
 exports.cancelOrder = async (req, res) => {
-  const isPrivileged = ["admin", "pharmacist"].includes(req.user.role);
+  const isPrivileged = ["admin", "pharmacist"].includes(req.user.role); 
   const filter = isPrivileged
     ? { _id: req.params.orderId }
     : { _id: req.params.orderId, userId: req.user.userId };
@@ -623,6 +623,8 @@ exports.cancelOrder = async (req, res) => {
       order: formatOrder(order),
     });
   }
+
+
 
   if (!USER_CANCELLABLE_STATUSES.includes(order.status)) {
     return res.status(409).json({
@@ -791,4 +793,17 @@ exports.updatePaymentStatusInternal = async (req, res) => {
     message: "Payment status synced successfully",
     order: formatOrder(order),
   });
+};
+
+
+//added func
+exports.getAnalyticsOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .sort({ createdAt: -1 });
+
+    res.json({ items: orders });
+  } catch {
+    res.json({ items: [] });
+  }
 };

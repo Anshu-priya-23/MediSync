@@ -43,33 +43,29 @@ select {
   transition: border 0.2s ease;
 }
 
-/* remove extra inner box */
 .search-box input {
   border: none;
   outline: none;
   box-shadow: none;
   padding: 6px 10px;
-  margin-bottom:2px;
+  margin-bottom: 2px;
   font-size: 13px;
   flex: 1;
   background: transparent;
   color: #111827;
 }
 
-/* remove focus glow */
 .search-box input:focus {
   outline: none;
   box-shadow: none;
 }
 
-/* icon */
 .search-box svg {
   margin-left: 12px;
   font-size: 16px;
   color: #6b7280;
 }
 
-/* clean focus effect */
 .search-box:focus-within {
   border: 1.5px solid #2cb1a5;
 }
@@ -77,7 +73,7 @@ select {
 /* ================= TABLE ================= */
 .table-container {
   width: 100%;
-  overflow-x: auto; /* important for split screen */
+  overflow-x: auto;
   background: white;
   border-radius: 16px;
   padding: 15px;
@@ -87,8 +83,8 @@ select {
 /* ================= TABLE STRUCTURE ================= */
 table {
   width: 100%;
-  min-width: 800px;
   border-collapse: collapse;
+  table-layout: fixed; /* ✅ AUTO ADJUST */
 }
 
 /* ================= HEADER ================= */
@@ -101,10 +97,20 @@ th {
 /* ================= CELLS ================= */
 th,
 td {
-  padding: 14px;
+  padding: 12px 10px;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
+  word-wrap: break-word; /* ✅ prevents overflow */
 }
+
+/* ================= COLUMN WIDTH BALANCE ================= */
+th:nth-child(1), td:nth-child(1) { width: 22%; } /* Medicine */
+th:nth-child(2), td:nth-child(2) { width: 14%; } /* Category */
+th:nth-child(3), td:nth-child(3) { width: 14%; } /* Supplier */
+th:nth-child(4), td:nth-child(4) { width: 10%; } /* Stock */
+th:nth-child(5), td:nth-child(5) { width: 10%; } /* Min */
+th:nth-child(6), td:nth-child(6) { width: 15%; } /* Expiry */
+th:nth-child(7), td:nth-child(7) { width: 10%; } /* Status */
 
 /* ================= STATUS ================= */
 .status {

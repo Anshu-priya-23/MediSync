@@ -2,7 +2,6 @@ import axios from "axios";
 import { getDashboardData } from "../services/aggregationService.js";
 import Settings from "../models/settings.js";
 
-
 // ================= DASHBOARD =================
 export const getDashboard = async (req, res) => {
   try {
@@ -16,12 +15,44 @@ export const getDashboard = async (req, res) => {
       inventory = [];
     }
 
+    // ✅ FIXED: supplierSet added
     const supplierSet = new Set();
+
     inventory.forEach(item => {
-      if (item.supplier) supplierSet.add(item.supplier);
+      if (item?.supplierId) {
+        const id = item.supplierId.toString();
+        supplierSet.add(`Supplier ${id.slice(-4)}`);
+      }
     });
 
-    const totalSuppliers = supplierSet.size;
+    const fallbackSuppliers = supplierSet.size;
+
+    // ================= TOTAL SALES =================
+    let totalSales = 0;
+
+    try {
+      const orderRes = await axios.get(
+        "http://localhost:5003/api/orders/analytics"
+      );
+
+      const orders = orderRes.data?.items || [];
+
+      const validSalesStatuses = [
+        "confirmed",
+        "ready_for_pickup",
+        "picked_up"
+      ];
+
+      orders.forEach(order => {
+        if (validSalesStatuses.includes(order.status)) {
+          totalSales += order.totalAmount || 0;
+        }
+      });
+
+    } catch (err) {
+      console.log("⚠️ Orders API error:", err.message);
+      totalSales = 0;
+    }
 
     let data = {};
     try {
@@ -42,15 +73,23 @@ export const getDashboard = async (req, res) => {
       };
     }
 
+    const totalSuppliers =
+      data?.cards?.totalSuppliers > 0
+        ? data.cards.totalSuppliers
+        : fallbackSuppliers;
+
     res.json({
       ...data,
       cards: {
         ...data.cards,
-        totalSuppliers
+        totalSuppliers,
+        totalSales
       }
     });
 
-  } catch {
+  } catch (err) {
+    console.log("❌ DASHBOARD ERROR:", err.message);
+
     res.json({
       cards: {
         totalSuppliers: 0,
@@ -58,7 +97,8 @@ export const getDashboard = async (req, res) => {
         lowStock: 0,
         outOfStock: 0,
         expiringSoon: 0,
-        expiryDays: 90
+        expiryDays: 90,
+        totalSales: 0
       },
       supplierData: [],
       categoryData: [],
@@ -67,17 +107,18 @@ export const getDashboard = async (req, res) => {
   }
 };
 
-
 // ================= REPORTS =================
 export const getReports = async (req, res) => {
   try {
     let orders = [];
 
     try {
-      const orderRes = await axios.get("http://localhost:5003/api/orders");
-      orders = Array.isArray(orderRes.data) ? orderRes.data : [];
-    } catch {
-      console.log("⚠️ Orders API down");
+      const orderRes = await axios.get(
+        "http://localhost:5003/api/orders/analytics"
+      );
+      orders = orderRes.data?.items || [];
+    } catch (err) {
+      console.log("⚠️ Orders API error:", err.message);
       orders = [];
     }
 
@@ -85,42 +126,80 @@ export const getReports = async (req, res) => {
     let totalOrders = orders.length;
     let totalCancelled = 0;
 
-    const supplierMap = {};
-    const monthMap = {};
+    const dailyMap = {};
+    const weeklyMap = {};
+    const monthlyMap = {};
+
+    const validSalesStatuses = [
+      "confirmed",
+      "ready_for_pickup",
+      "picked_up"
+    ];
 
     orders.forEach(order => {
-      const amount = order.amount || 0;
-      const supplier = order.supplier || "Unknown";
+      const amount = order.totalAmount || 0;
 
-      if (order.status === "Completed") {
+      const rawDate =
+        order.placedAt?.$date ||
+        order.createdAt?.$date ||
+        order.placedAt ||
+        order.createdAt;
+
+      const date = new Date(rawDate);
+      if (isNaN(date)) return;
+
+      if (validSalesStatuses.includes(order.status)) {
         totalSales += amount;
 
-        supplierMap[supplier] = (supplierMap[supplier] || 0) + 1;
+        const dayKey = date.toISOString().split("T")[0];
+        dailyMap[dayKey] = (dailyMap[dayKey] || 0) + amount;
 
-        const date = new Date(order.date || new Date());
-        const month = date.toLocaleString("default", { month: "short" });
+        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        const week = Math.ceil(
+          ((date - firstDay) / (1000 * 60 * 60 * 24) +
+            firstDay.getDay() +
+            1) / 7
+        );
 
-        monthMap[month] = (monthMap[month] || 0) + amount;
+        const weekKey = `W${week}`;
+        weeklyMap[weekKey] = (weeklyMap[weekKey] || 0) + amount;
+
+        const monthKey = date.toLocaleString("default", { month: "short" });
+        monthlyMap[monthKey] = (monthlyMap[monthKey] || 0) + amount;
       }
 
-      if (order.status === "Cancelled") {
+      if (order.status === "cancelled") {
         totalCancelled++;
       }
     });
 
-    const supplierData = Object.entries(supplierMap).map(
-      ([supplier, total]) => ({ supplier, total })
-    );
+    const dailyData = Object.entries(dailyMap)
+      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+      .slice(-7)
+      .map(([day, value]) => ({
+        day: new Date(day).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short"
+        }),
+        value
+      }));
 
-    const monthlyData = Object.entries(monthMap).map(
-      ([month, value]) => ({ month, value })
-    );
+    const weeklyData = Object.entries(weeklyMap).map(([week, value]) => ({
+      week,
+      value
+    }));
+
+    const monthlyData = Object.entries(monthlyMap).map(([month, value]) => ({
+      month,
+      value
+    }));
 
     res.json({
       totalSales,
       totalOrders,
       totalCancelled,
-      supplierData,
+      dailyData,
+      weeklyData,
       monthlyData
     });
 
@@ -129,45 +208,46 @@ export const getReports = async (req, res) => {
       totalSales: 0,
       totalOrders: 0,
       totalCancelled: 0,
-      supplierData: [],
+      dailyData: [],
+      weeklyData: [],
       monthlyData: []
     });
   }
 };
 
-
 // ================= SUPPLIERS =================
 export const getSuppliers = async (req, res) => {
   try {
-    let inventory = [];
+    const response = await axios.get("http://localhost:5002/api/medicines");
 
-    try {
-      const response = await axios.get("http://localhost:5002/api/medicines");
-      inventory = Array.isArray(response.data) ? response.data : [];
-    } catch {
-      inventory = [];
+    const inventory = Array.isArray(response.data) ? response.data : [];
+
+    if (!inventory.length) {
+      return res.json([]);
     }
 
-    const supplierSet = new Set();
+    const supplierMap = new Map();
 
     inventory.forEach(item => {
-      if (item.supplier) supplierSet.add(item.supplier);
+      const supplierId = item?.supplierId;
+
+      if (supplierId && !supplierMap.has(supplierId)) {
+        supplierMap.set(supplierId, {
+          _id: supplierId,
+          name: `Supplier ${supplierId.toString().slice(-4)}`,
+          email: "N/A",
+          status: "Active"
+        });
+      }
     });
 
-    const suppliers = Array.from(supplierSet).map((name, index) => ({
-      _id: index + 1,
-      name,
-      email: "-",
-      status: "Active"
-    }));
+    res.json(Array.from(supplierMap.values()));
 
-    res.json(suppliers);
-
-  } catch {
+  } catch (err) {
+    console.error("❌ Supplier error:", err.message);
     res.json([]);
   }
 };
-
 
 // ================= STOCK =================
 export const getStock = async (req, res) => {
@@ -185,7 +265,9 @@ export const getStock = async (req, res) => {
       _id: item._id || Math.random(),
       name: item.name || "Unknown",
       category: item.category || "Others",
-      supplier: item.supplier || "Unknown",
+      supplier: item.supplierId
+        ? `Supplier ${item.supplierId.toString().slice(-4)}`
+        : "Unknown",
       stock: item.stock ?? 0,
       min: item.minThreshold ?? item.min ?? 0,
       expiry: item.expiryDate || item.expiry || null
@@ -198,10 +280,7 @@ export const getStock = async (req, res) => {
   }
 };
 
-
 // ================= SETTINGS =================
-
-// GET
 export const getSettings = async (req, res) => {
   try {
     const settings = await Settings.findOne();
@@ -210,7 +289,6 @@ export const getSettings = async (req, res) => {
     res.json({});
   }
 };
-
 
 // ================= UPDATE PROFILE =================
 export const updateProfile = async (req, res) => {
@@ -223,7 +301,6 @@ export const updateProfile = async (req, res) => {
       { new: true, upsert: true }
     );
 
-    // 🔥 Sync with Auth Service
     try {
       await axios.put(
         "http://localhost:5001/api/auth/update-profile",
@@ -239,7 +316,6 @@ export const updateProfile = async (req, res) => {
     res.json({});
   }
 };
-
 
 // ================= UPDATE PREFERENCES =================
 export const updatePreferences = async (req, res) => {
@@ -265,7 +341,6 @@ export const updatePreferences = async (req, res) => {
   }
 };
 
-
 // ================= CHANGE PASSWORD =================
 export const changePassword = async (req, res) => {
   try {
@@ -275,7 +350,6 @@ export const changePassword = async (req, res) => {
       return res.json({ message: "All fields required" });
     }
 
-    // 🔥 Only Auth Service handles password
     try {
       const response = await axios.put(
         "http://localhost:5001/api/auth/change-password",

@@ -5,7 +5,7 @@ import {
   FiAlertTriangle,
   FiXCircle,
   FiClock,
-  FiDollarSign
+  
 } from "react-icons/fi";
 import "./Dashboard.css";
 
@@ -76,7 +76,7 @@ function Dashboard() {
         </div>
 
         <div className="card">
-          <div className="icon-box"><FiDollarSign /></div>
+          
           <h4>Total Sales</h4>
           <h2>₹ {cards.totalSales || 0}</h2>
         </div>

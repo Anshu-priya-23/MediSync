@@ -107,7 +107,7 @@ function Layout() {
           }
         />
 
-        <Route
+       <Route
           path="/payments/:orderId"
           element={
             <ProtectedRoute>

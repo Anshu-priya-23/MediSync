@@ -28,7 +28,7 @@ const Login = () => {
             
             // ✅ FIXED ROUTING
             if (res.data.user.role === 'admin') {
-                navigate('/admin-dashboard/dashboard'); // ✅ correct
+                navigate('/admin-dashboard');
             } else if (res.data.user.role === 'pharmacist') {
                 navigate('/supplier-dashboard');
             } else {

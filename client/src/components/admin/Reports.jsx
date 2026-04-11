@@ -26,6 +26,8 @@ const Reports = () => {
       setData({
         totalOrders: 0,
         totalCancelled: 0,
+        dailyData: [],
+        weeklyData: [],
         monthlyData: []
       });
     }
@@ -39,27 +41,12 @@ const Reports = () => {
 
   if (!data) return <h2>Loading...</h2>;
 
+  // ✅ USE REAL BACKEND DATA
+  const dailyData = data.dailyData || [];
+  const weeklyData = data.weeklyData || [];
   const monthlyData = data.monthlyData || [];
 
-  // ✅ DAILY
-  const dailyData =
-    monthlyData.length === 0
-      ? []
-      : monthlyData.slice(-7).map((d, i) => ({
-          day: `Day ${i + 1}`,
-          value: Math.floor(d.value / 10)
-        }));
-
-  // ✅ WEEKLY
-  const weeklyData =
-    monthlyData.length === 0
-      ? []
-      : monthlyData.slice(-4).map((d, i) => ({
-          week: `W${i + 1}`,
-          value: Math.floor(d.value / 5)
-        }));
-
-  // ✅ INSIGHTS (CORRECT PLACE)
+  // ✅ INSIGHTS
   const lastSales = monthlyData[monthlyData.length - 1]?.value || 0;
   const prevSales = monthlyData[monthlyData.length - 2]?.value || 0;
 
@@ -80,14 +67,13 @@ const Reports = () => {
   return (
     <div className="reports-page">
 
-      {/* Header */}
+      {/* HEADER */}
       <div className="reports-header">
         <h2>Reports</h2>
       </div>
 
       {/* SUMMARY */}
       <div className="summary-cards">
-
         <div className="card">
           <p>Total Orders</p>
           <h3>{data.totalOrders || 0}</h3>
@@ -97,10 +83,9 @@ const Reports = () => {
           <p>Cancelled Orders</p>
           <h3 className="red">{data.totalCancelled || 0}</h3>
         </div>
-
       </div>
 
-      {/* ✅ INSIGHTS UI (YOU MISSED THIS) */}
+      {/* INSIGHTS */}
       <div className="insights">
         <div className="insight-box">{salesInsight}</div>
         <div className="insight-box">{ordersInsight}</div>
@@ -109,7 +94,7 @@ const Reports = () => {
       {/* CHARTS */}
       <div className="charts-grid">
 
-        {/* DAILY */}
+        {/* DAILY SALES */}
         <div className="chart-card">
           <h4>Daily Sales</h4>
 
@@ -127,7 +112,7 @@ const Reports = () => {
           )}
         </div>
 
-        {/* WEEKLY */}
+        {/* WEEKLY SALES */}
         <div className="chart-card">
           <h4>Weekly Sales</h4>
 
@@ -145,7 +130,7 @@ const Reports = () => {
           )}
         </div>
 
-        {/* MONTHLY */}
+        {/* MONTHLY SALES */}
         <div className="chart-card">
           <h4>Monthly Sales</h4>
 
@@ -173,4 +158,4 @@ const Reports = () => {
   );
 };
 
-export default Reports;
+export default Reports
