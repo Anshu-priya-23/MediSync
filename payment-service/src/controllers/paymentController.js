@@ -2,7 +2,23 @@ const Payment = require("../models/Payment");
 const { processPayment } = require("../config/paymentGateway");
 const publisher = require("../events/publisher");
 const { enqueueIncomingOrderEvent } = require("../events/orderEventConsumer");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripeSecretKey = String(process.env.STRIPE_SECRET_KEY || "").trim();
+const stripePublishableKey = String(process.env.STRIPE_PUBLIC_KEY || "").trim();
+const stripe = stripeSecretKey ? require("stripe")(stripeSecretKey) : null;
+
+function stripeKeyFingerprint(key) {
+  return String(key || "")
+    .trim()
+    .split("_")[2]
+    ?.slice(0, 10);
+}
+
+function hasStripeKeyMismatch() {
+  if (!stripeSecretKey || !stripePublishableKey) {
+    return false;
+  }
+  return stripeKeyFingerprint(stripeSecretKey) !== stripeKeyFingerprint(stripePublishableKey);
+}
 
 function randomPaymentNumber() {
   const now = new Date();
@@ -161,6 +177,18 @@ exports.createPayment = async (req, res) => {
 
 exports.createStripeIntent = async (req, res) => {
   try {
+    if (!stripe) {
+      return res.status(500).json({
+        message: "Stripe is not configured on payment-service. Missing STRIPE_SECRET_KEY.",
+      });
+    }
+
+    if (hasStripeKeyMismatch()) {
+      return res.status(500).json({
+        message: "Stripe keys are misconfigured. STRIPE_SECRET_KEY and STRIPE_PUBLIC_KEY must belong to the same Stripe account.",
+      });
+    }
+
     const { amount, orderId } = req.body;
     
     // 🚀 THE FIX: Minimum amount bypass for test mode. 
@@ -173,11 +201,32 @@ exports.createStripeIntent = async (req, res) => {
       metadata: { orderId, userId: req.user.userId },
     });
 
-    res.status(200).json({ clientSecret: paymentIntent.client_secret });
+    res.status(200).json({
+      clientSecret: paymentIntent.client_secret,
+      publishableKey: stripePublishableKey || undefined,
+    });
   } catch (error) {
     console.error("Stripe Intent Error:", error);
     res.status(500).json({ message: error.message });
   }
+};
+
+exports.getStripeConfig = async (_req, res) => {
+  if (!stripePublishableKey) {
+    return res.status(500).json({
+      message: "Stripe publishable key is missing on payment-service.",
+    });
+  }
+
+  if (hasStripeKeyMismatch()) {
+    return res.status(500).json({
+      message: "Stripe keys are misconfigured. STRIPE_SECRET_KEY and STRIPE_PUBLIC_KEY must belong to the same Stripe account.",
+    });
+  }
+
+  return res.status(200).json({
+    publishableKey: stripePublishableKey,
+  });
 };
 
 exports.syncStripePayment = async (req, res) => {

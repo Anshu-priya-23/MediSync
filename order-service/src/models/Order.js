@@ -5,6 +5,7 @@ const orderItemSchema = new mongoose.Schema(
     medicineId: { type: String, required: true, trim: true },
     medicineName: { type: String, required: true, trim: true },
     category: { type: String, default: "General", trim: true },
+    supplierId: { type: String, default: "", trim: true },
     imageData: { type: String, default: "" },
     unitPrice: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 1 },

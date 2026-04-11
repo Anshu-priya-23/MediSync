@@ -11,6 +11,7 @@ const asyncHandler = (fn) => (req, res, next) =>
 router.post("/events", verifyInternalRequest, asyncHandler(controller.handleOrderEvents));
 
 router.use(authenticate);
+router.get("/stripe-config", asyncHandler(controller.getStripeConfig));
 router.post("/create-intent", asyncHandler(controller.createStripeIntent));
 router.post("/create", asyncHandler(controller.createPayment));
 router.post("/sync", asyncHandler(controller.syncStripePayment));

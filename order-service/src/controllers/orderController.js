@@ -56,6 +56,7 @@ function formatCart(cart) {
       medicineId: item.medicineId,
       medicineName: item.medicineName,
       category: item.category,
+      supplierId: item.supplierId || "",
       imageData: item.imageData || "",
       unitPrice: item.unitPrice,
       quantity: item.quantity,
@@ -346,11 +347,13 @@ exports.addToCart = async (req, res) => {
     if (current) {
       current.quantity = Math.min(current.quantity + requestedQty, MAX_ITEM_QUANTITY);
       current.imageData = current.imageData || medicine.imageData || "";
+      current.supplierId = current.supplierId || String(medicine.supplierId || "");
     } else {
       editableCart.items.push({
         medicineId,
         medicineName: medicine.name,
         category: medicine.category || "General",
+        supplierId: String(medicine.supplierId || ""),
         imageData: medicine.imageData || "",
         unitPrice: toNumber(medicine.price, 0),
         quantity: requestedQty,
@@ -542,6 +545,7 @@ exports.checkout = async (req, res) => {
           medicineId: item.medicineId,
           medicineName: item.medicineName,
           category: item.category,
+          supplierId: item.supplierId || "",
           imageData: item.imageData || "",
           unitPrice: item.unitPrice,
           quantity: item.quantity,
@@ -711,6 +715,75 @@ exports.getOrderById = async (req, res) => {
 
   await hydrateOrderImages(order);
   return res.status(200).json({ order: formatOrder(order) });
+};
+
+exports.getSupplierOrdersInternal = async (req, res) => {
+  const supplierId = String(req.params.supplierId || "").trim();
+  if (!supplierId) {
+    return res.status(400).json({ message: "supplierId is required" });
+  }
+
+  const orders = await Order.find({ status: { $ne: "cancelled" } })
+    .sort({ createdAt: -1 })
+    .limit(500);
+
+  const medicineSupplierCache = new Map();
+  const rows = [];
+
+  for (const order of orders) {
+    const medicines = [];
+
+    for (const item of order.items || []) {
+      let itemSupplierId = String(item.supplierId || "").trim();
+
+      if (!itemSupplierId) {
+        const medId = String(item.medicineId || "").trim();
+        if (medId) {
+          if (!medicineSupplierCache.has(medId)) {
+            try {
+              const medicine = await inventoryClient.getMedicineById(medId);
+              medicineSupplierCache.set(medId, String(medicine?.supplierId || ""));
+            } catch (_error) {
+              medicineSupplierCache.set(medId, "");
+            }
+          }
+          itemSupplierId = String(medicineSupplierCache.get(medId) || "").trim();
+        }
+      }
+
+      if (itemSupplierId !== supplierId) {
+        continue;
+      }
+
+      medicines.push({
+        name: item.medicineName,
+        quantity: item.quantity,
+        price: item.unitPrice,
+        supplierId: itemSupplierId,
+      });
+    }
+
+    if (!medicines.length) {
+      continue;
+    }
+
+    const supplierTotal = Number(
+      medicines.reduce((sum, med) => sum + Number(med.quantity || 0) * Number(med.price || 0), 0).toFixed(2)
+    );
+
+    rows.push({
+      _id: order._id,
+      orderNumber: order.orderNumber,
+      customerName: order.userId,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      supplierTotal,
+      medicines,
+      createdAt: order.createdAt,
+    });
+  }
+
+  return res.status(200).json(rows);
 };
 
 exports.updateOrderStatus = async (req, res) => {
