@@ -14,8 +14,10 @@ const Navbar = () => {
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : <User size={20} />;
   const cartCount = Number(cart?.totalItems || 0);
 
-  const hideCategoriesOn = ["/profile", "/login", "/register", "/dashboard", "/cart", "/checkout", "/orders"];
-  const shouldHideCategories = hideCategoriesOn.includes(location.pathname) || location.pathname.startsWith("/payments/");
+    // 🚨 THE CRITICAL FIX: Hide categories on Auth, Profile, and ALL Dashboards!
+    const shouldHideCategories = 
+        ['/profile', '/login', '/register'].includes(location.pathname) || 
+        location.pathname.includes('dashboard');
 
   return (
     <div className="navbar-wrapper">

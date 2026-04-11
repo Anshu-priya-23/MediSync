@@ -1,5 +1,4 @@
 {
-  "name": "medisync-monorepo",
-  "private": true,
+  "name": "medisync-root",
   "version": "1.0.0"
 }

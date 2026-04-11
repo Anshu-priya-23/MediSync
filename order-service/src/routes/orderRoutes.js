@@ -16,6 +16,7 @@ router.patch(
 
 router.get("/medicines", asyncHandler(controller.listMedicines));
 router.get("/pickup-slots", asyncHandler(controller.getPickupSlots));
+router.get("/analytics", asyncHandler(controller.getAnalyticsOrders));// ✅ analytics
 
 router.use(authenticate);
 
