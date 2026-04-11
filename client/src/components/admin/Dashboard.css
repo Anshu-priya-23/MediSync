@@ -25,9 +25,9 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 22px;
-  margin-bottom: 35px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
 .card {

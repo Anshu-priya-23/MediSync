@@ -119,7 +119,7 @@ const StockMonitor = () => {
                     <td>{med.supplier}</td>
                     <td>{med.stock}</td>
                     <td>{med.min}</td>
-                    <td>{med.expiry}</td>
+                    <td>{med.expiry ? med.expiry.split("T")[0]:"-"}</td>
 
                     {/* ✅ STATUS BADGE */}
                     <td>

@@ -4,7 +4,8 @@ import {
   FiPackage,
   FiAlertTriangle,
   FiXCircle,
-  FiClock
+  FiClock,
+  FiDollarSign
 } from "react-icons/fi";
 import "./Dashboard.css";
 
@@ -13,7 +14,6 @@ import {
   Line,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
@@ -31,7 +31,6 @@ const API = "http://localhost:5005/api/analytics/dashboard";
 function Dashboard() {
   const [data, setData] = useState(null);
 
-  // ✅ FETCH FUNCTION
   const fetchDashboard = async () => {
     try {
       const res = await axios.get(API);
@@ -41,20 +40,14 @@ function Dashboard() {
     }
   };
 
-  // ✅ POLLING (REAL-TIME)
   useEffect(() => {
-    fetchDashboard(); // first load
-
-    const interval = setInterval(() => {
-      fetchDashboard();
-    }, 5000); // every 5 sec
-
+    fetchDashboard();
+    const interval = setInterval(fetchDashboard, 5000);
     return () => clearInterval(interval);
   }, []);
 
   if (!data) return <h2>Loading...</h2>;
 
-  // ✅ SAFE DATA (IMPORTANT)
   const cards = data.cards || {};
   const trendData = data.trendData || [];
   const supplierData = data.supplierData || [];
@@ -69,25 +62,30 @@ function Dashboard() {
       {/* ====== CARDS ====== */}
       <div className="cards">
 
+        {/* ROW 1 */}
         <div className="card">
           <div className="icon-box"><FiUsers /></div>
           <h4>Total Suppliers</h4>
           <h2>{cards.totalSuppliers || 0}</h2>
-          <span className="positive">Updated</span>
         </div>
 
         <div className="card">
           <div className="icon-box"><FiPackage /></div>
           <h4>Total Medicines</h4>
           <h2>{cards.totalMedicines || 0}</h2>
-          <span className="positive">Updated</span>
         </div>
 
         <div className="card">
+          <div className="icon-box"><FiDollarSign /></div>
+          <h4>Total Sales</h4>
+          <h2>₹ {cards.totalSales || 0}</h2>
+        </div>
+
+        {/* ROW 2 */}
+        <div className="card">
           <div className="icon-box"><FiAlertTriangle /></div>
-          <h4>Low Stock Items</h4>
+          <h4>Low Stock</h4>
           <h2>{cards.lowStock || 0}</h2>
-          <span className="negative">Needs attention</span>
         </div>
 
         <div className="card">
@@ -117,7 +115,6 @@ function Dashboard() {
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={supplierData}>
-                <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
@@ -165,7 +162,6 @@ function Dashboard() {
         ) : (
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" />
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
@@ -176,7 +172,6 @@ function Dashboard() {
                 dataKey="stock"
                 stroke="#2cb1a5"
                 strokeWidth={3}
-                dot={{ r: 5 }}
               />
 
               <Line
@@ -184,7 +179,6 @@ function Dashboard() {
                 dataKey="orders"
                 stroke="#f59e0b"
                 strokeWidth={3}
-                dot={{ r: 5 }}
               />
             </LineChart>
           </ResponsiveContainer>

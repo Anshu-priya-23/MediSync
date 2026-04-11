@@ -117,7 +117,7 @@ function Layout() {
         />
 
         <Route
-          path="/dashboard"
+          path="/admin-dashboard/*"
           element={
             <ProtectedRoute adminOnly={true}>
               <AdminDashboard />

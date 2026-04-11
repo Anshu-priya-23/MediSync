@@ -34,29 +34,25 @@ const SupplierManagement = () => {
         <table>
           <thead>
             <tr>
+              <th>Supplier ID</th>
               <th>Supplier Name</th>
               <th>Email</th>
-              <th>Status</th>
             </tr>
           </thead>
 
           <tbody>
             {suppliers.length === 0 ? (
               <tr>
-                <td colSpan="3" style={{ textAlign: "center", padding: "20px" }}>
+                <td colSpan="3" className="empty">
                   No suppliers found
                 </td>
               </tr>
             ) : (
               suppliers.map((supplier, index) => (
                 <tr key={supplier._id || index}>
+                  <td>{supplier._id}</td>
                   <td>{supplier.name}</td>
                   <td>{supplier.email || "-"}</td>
-                  <td>
-                    <span className={`status ${(supplier.status || "Active").toLowerCase()}`}>
-                      {supplier.status || "Active"}
-                    </span>
-                  </td>
                 </tr>
               ))
             )}

@@ -21,7 +21,7 @@ import "./AdminDashboard.css";
 
 function AdminDashboard() {
   const [open, setOpen] = useState(true);
-  const location = useLocation(); // ✅ added
+  const location = useLocation();
 
   return (
     <div className="admin-layout">
@@ -39,12 +39,12 @@ function AdminDashboard() {
           />
         </div>
 
-        {/* MENU */}
+        {/* ===== MENU ===== */}
         <nav className="menu">
 
-          {/* ✅ ONLY CHANGE HERE */}
+          {/* DASHBOARD */}
           <NavLink
-            to="dashboard"
+            to="/admin-dashboard/dashboard"
             className={({ isActive }) =>
               isActive || location.pathname === "/admin-dashboard"
                 ? "active"
@@ -54,19 +54,23 @@ function AdminDashboard() {
             <FiGrid /> Dashboard
           </NavLink>
 
-          <NavLink to="stock-monitor">
+          {/* STOCK */}
+          <NavLink to="/admin-dashboard/stock-monitor">
             <FiActivity /> Stock Monitor
           </NavLink>
 
-          <NavLink to="supplier-management">
+          {/* SUPPLIERS */}
+          <NavLink to="/admin-dashboard/supplier-management">
             <FiUsers /> Supplier Management
           </NavLink>
 
-          <NavLink to="reports">
+          {/* REPORTS */}
+          <NavLink to="/admin-dashboard/reports">
             <FiBarChart2 /> Reports
           </NavLink>
 
-          <NavLink to="settings">
+          {/* SETTINGS */}
+          <NavLink to="/admin-dashboard/settings">
             <FiSettings /> Settings
           </NavLink>
 
@@ -84,7 +88,7 @@ function AdminDashboard() {
 
         <main className="content">
 
-          {/* HAMBURGER WHEN CLOSED */}
+          {/* HAMBURGER */}
           {!open && (
             <FiMenu
               className="hamburger"
@@ -92,6 +96,7 @@ function AdminDashboard() {
             />
           )}
 
+          {/* ===== ROUTES ===== */}
           <Routes>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />

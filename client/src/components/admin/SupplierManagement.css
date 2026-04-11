@@ -3,7 +3,7 @@
   width: 100%;
   font-family: "Segoe UI", sans-serif;
   font-size: 20px;
-  padding-left:20px;
+  padding-left: 20px;
 }
 
 /* Header */
@@ -20,22 +20,21 @@
   font-weight: 600;
 }
 
-
-
-
-/* Table */
+/* Table Container */
 .supplier-table-container {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
+  overflow-x: auto; /* ✅ responsive */
 }
 
+/* Table */
 table {
   width: 100%;
   border-collapse: collapse;
 }
 
+/* Header Row */
 thead {
   background-color: #f3f6f8;
 }
@@ -48,40 +47,49 @@ th {
   font-size: 14px;
 }
 
+/* Data Row */
 td {
   padding: 15px;
   border-top: 1px solid #eef2f5;
   font-size: 14px;
   color: #444;
+  white-space: nowrap; /* ✅ prevent breaking */
 }
 
+/* Hover Effect */
 tbody tr:hover {
   background-color: #f9fbfc;
   transition: 0.2s ease;
 }
 
-/* Center empty message */
+/* Empty Message */
 td[colspan] {
   text-align: center;
   font-size: 14px;
   color: #888;
+  padding: 20px;
 }
 
-/* Status Badges */
-.status {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  display: inline-block;
+/* Column Alignment */
+th:nth-child(1),
+td:nth-child(1) {
+  width: 30%;
 }
 
-.status.active {
-  background-color: #d4f5e9;
-  color: #28a745;
+th:nth-child(2),
+td:nth-child(2) {
+  width: 35%;
 }
 
-.status.inactive {
-  background-color: #f8d7da;
-  color: #dc3545;
+th:nth-child(3),
+td:nth-child(3) {
+  width: 35%;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  th, td {
+    padding: 10px;
+    font-size: 12px;
+  }
 }

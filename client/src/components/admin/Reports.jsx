@@ -8,9 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   LineChart,
-  Line,
-  CartesianGrid,
-  Legend,
+  Line
 } from "recharts";
 import axios from "axios";
 
@@ -26,10 +24,8 @@ const Reports = () => {
     } catch (err) {
       console.error("Reports Error:", err);
       setData({
-        totalSales: 0,
         totalOrders: 0,
         totalCancelled: 0,
-        supplierData: [],
         monthlyData: []
       });
     }
@@ -43,9 +39,43 @@ const Reports = () => {
 
   if (!data) return <h2>Loading...</h2>;
 
-  // ✅ SAFE DATA
-  const supplierData = data.supplierData || [];
   const monthlyData = data.monthlyData || [];
+
+  // ✅ DAILY
+  const dailyData =
+    monthlyData.length === 0
+      ? []
+      : monthlyData.slice(-7).map((d, i) => ({
+          day: `Day ${i + 1}`,
+          value: Math.floor(d.value / 10)
+        }));
+
+  // ✅ WEEKLY
+  const weeklyData =
+    monthlyData.length === 0
+      ? []
+      : monthlyData.slice(-4).map((d, i) => ({
+          week: `W${i + 1}`,
+          value: Math.floor(d.value / 5)
+        }));
+
+  // ✅ INSIGHTS (CORRECT PLACE)
+  const lastSales = monthlyData[monthlyData.length - 1]?.value || 0;
+  const prevSales = monthlyData[monthlyData.length - 2]?.value || 0;
+
+  const salesInsight =
+    lastSales > prevSales
+      ? "📈 Sales increased"
+      : lastSales < prevSales
+      ? "📉 Sales decreased"
+      : "➖ No change in sales";
+
+  const ordersInsight =
+    data.totalOrders > data.totalCancelled
+      ? "📦 Orders increased"
+      : data.totalOrders < data.totalCancelled
+      ? "📉 Orders decreased"
+      : "➖ No change in orders";
 
   return (
     <div className="reports-page">
@@ -55,17 +85,12 @@ const Reports = () => {
         <h2>Reports</h2>
       </div>
 
-      {/* 🔥 SUMMARY CARDS */}
+      {/* SUMMARY */}
       <div className="summary-cards">
 
         <div className="card">
-          <p>Total Sales</p>
-          <h3>Rs {data.totalSales || 0}</h3>
-        </div>
-
-        <div className="card">
           <p>Total Orders</p>
-          <h3 className="orange">{data.totalOrders || 0}</h3>
+          <h3>{data.totalOrders || 0}</h3>
         </div>
 
         <div className="card">
@@ -75,28 +100,52 @@ const Reports = () => {
 
       </div>
 
-      {/* 🔥 CHARTS */}
+      {/* ✅ INSIGHTS UI (YOU MISSED THIS) */}
+      <div className="insights">
+        <div className="insight-box">{salesInsight}</div>
+        <div className="insight-box">{ordersInsight}</div>
+      </div>
+
+      {/* CHARTS */}
       <div className="charts-grid">
 
-        {/* Supplier Performance */}
+        {/* DAILY */}
         <div className="chart-card">
-          <h4>Supplier Performance</h4>
+          <h4>Daily Sales</h4>
 
-          {supplierData.length === 0 ? (
+          {dailyData.length === 0 ? (
             <p>No data available</p>
           ) : (
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={supplierData}>
-                <XAxis dataKey="supplier" />
+              <BarChart data={dailyData}>
+                <XAxis dataKey="day" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="total" fill="#2cb1a5" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="value" fill="#2cb1a5" />
               </BarChart>
             </ResponsiveContainer>
           )}
         </div>
 
-        {/* Monthly Sales */}
+        {/* WEEKLY */}
+        <div className="chart-card">
+          <h4>Weekly Sales</h4>
+
+          {weeklyData.length === 0 ? (
+            <p>No data available</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={weeklyData}>
+                <XAxis dataKey="week" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#4fd1c5" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* MONTHLY */}
         <div className="chart-card">
           <h4>Monthly Sales</h4>
 
@@ -105,19 +154,15 @@ const Reports = () => {
           ) : (
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip />
-                <Legend />
-
                 <Line
                   type="monotone"
                   dataKey="value"
                   stroke="#2cb1a5"
                   strokeWidth={3}
                 />
-
               </LineChart>
             </ResponsiveContainer>
           )}

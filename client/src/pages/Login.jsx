@@ -26,15 +26,14 @@ const Login = () => {
             
             login(res.data); 
             
-            // --- UPDATED ROUTING LOGIC ---
+            // ✅ FIXED ROUTING
             if (res.data.user.role === 'admin') {
-                navigate('/AdminDashboard');
+                navigate('/admin-dashboard/dashboard'); // ✅ correct
             } else if (res.data.user.role === 'pharmacist') {
-                navigate('/supplier-dashboard'); // <-- The hyphen is here!
+                navigate('/supplier-dashboard');
             } else {
                 navigate('/');
             }
-            // -----------------------------
 
         } catch (err) {
             alert("Login Failed: " + (err.response?.data?.message || "Server Error"));

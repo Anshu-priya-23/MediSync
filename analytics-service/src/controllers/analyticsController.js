@@ -294,5 +294,3 @@ export const changePassword = async (req, res) => {
     res.json({ message: "Error updating password" });
   }
 };
-
-
