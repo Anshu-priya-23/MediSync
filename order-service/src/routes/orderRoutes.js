@@ -13,6 +13,11 @@ router.patch(
   verifyInternalRequest,
   asyncHandler(controller.updatePaymentStatusInternal)
 );
+router.get(
+  "/internal/supplier/:supplierId/orders",
+  verifyInternalRequest,
+  asyncHandler(controller.getSupplierOrdersInternal)
+);
 
 router.get("/medicines", asyncHandler(controller.listMedicines));
 router.get("/pickup-slots", asyncHandler(controller.getPickupSlots));

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./orders.css";
 import inventoryService from "../../services/inventoryService";
 
@@ -6,15 +6,29 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Supplier ID used for the API call
-  const supplierId = "661111111111111111111111";
+  const supplierId = useMemo(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.userId || null;
+    } catch (_error) {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
+    if (!supplierId) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
+
     const fetchOrders = async () => {
       try {
         setLoading(true);
         const data = await inventoryService.getSupplierOrders(supplierId);
-        // Ensure data is an array before setting state
         setOrders(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Failed to fetch orders:", error);
@@ -23,9 +37,7 @@ const Orders = () => {
       }
     };
 
-    if (supplierId) {
-      fetchOrders();
-    }
+    fetchOrders();
   }, [supplierId]);
 
   if (loading) return <div className="loading">Loading orders...</div>;
@@ -54,24 +66,18 @@ const Orders = () => {
           </div>
         ) : (
           orders.map((order) =>
-            // Each order contains an array of medicines
-            order.medicines.map((med, index) => (
-              <div key={`${order._id}-${index}`} className="orders-row">
-                {/* 1. Extract Order ID from the parent 'order' object */}
+            (order.medicines || []).map((med, index) => (
+              <div key={`${order._id || order.orderNumber}-${index}`} className="orders-row">
                 <span className="order-id">
-                  {order._id.substring(order._id.length - 8).toUpperCase()}
+                  {(order.orderNumber || order._id || "").toString().slice(-12).toUpperCase()}
                 </span>
-
-                {/* 2. Extract Customer Name from the parent 'order' object */}
                 <span>{order.customerName || "N/A"}</span>
-
-                {/* 3. Medicine details come from the 'med' object inside the array */}
-                <span className="medicine-name"><strong>{med.name}</strong></span>
+                <span className="medicine-name">
+                  <strong>{med.name}</strong>
+                </span>
                 <span>{med.quantity}</span>
-                <span>₹{med.price}</span>
-
-                {/* 4. Total Amount and Status come from the parent 'order' object */}
-                <span>₹{order.totalAmount}</span>
+                <span>Rs {med.price}</span>
+                <span>Rs {order.supplierTotal ?? order.totalAmount}</span>
                 <span>
                   <span className={`status-badge ${(order.status || "Pending").toLowerCase()}`}>
                     {order.status || "Pending"}

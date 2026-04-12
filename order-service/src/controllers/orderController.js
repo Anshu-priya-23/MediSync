@@ -56,6 +56,7 @@ function formatCart(cart) {
       medicineId: item.medicineId,
       medicineName: item.medicineName,
       category: item.category,
+      supplierId: item.supplierId || "",
       imageData: item.imageData || "",
       unitPrice: item.unitPrice,
       quantity: item.quantity,
@@ -258,6 +259,29 @@ async function saveOrderSafely(order) {
   }
 }
 
+async function releaseOrderInventoryIfNeeded(order, reference) {
+  if (!["reserved", "deducted"].includes(order.inventoryStatus)) {
+    return { ok: true, skipped: true };
+  }
+
+  const releaseItems = order.items.map((item) => ({
+    medicineId: item.medicineId,
+    quantity: item.quantity,
+  }));
+
+  const result = await inventoryClient.releaseStock(releaseItems, reference);
+  if (!result.ok) {
+    return {
+      ok: false,
+      message: result.message || "Unable to release stock for cancellation",
+      unavailable: result.unavailable || [],
+    };
+  }
+
+  order.inventoryStatus = "released";
+  return { ok: true };
+}
+
 exports.listMedicines = async (req, res) => {
   const medicines = await inventoryClient.fetchMedicines({
     q: req.query.q,
@@ -332,6 +356,7 @@ exports.addToCart = async (req, res) => {
         supplierId: medicine.supplierId || "UNKNOWN_SUPPLIER",
         medicineName: medicine.name,
         category: medicine.category || "General",
+        supplierId: String(medicine.supplierId || ""),
         imageData: medicine.imageData || "",
         unitPrice: toNumber(medicine.price, 0),
         quantity: requestedQty,
@@ -527,6 +552,7 @@ exports.checkout = async (req, res) => {
           supplierId: item.supplierId || "UNKNOWN_SUPPLIER", 
           medicineName: item.medicineName,
           category: item.category,
+          supplierId: item.supplierId || "",
           imageData: item.imageData || "",
           unitPrice: item.unitPrice,
           quantity: item.quantity,
@@ -646,32 +672,22 @@ exports.cancelOrder = async (req, res) => {
     });
   }
 
-  if (["reserved", "deducted"].includes(order.inventoryStatus)) {
-    const releaseItems = order.items.map((item) => ({
-      medicineId: item.medicineId,
-      quantity: item.quantity,
-    }));
-
-    try {
-      const releaseResult = await inventoryClient.releaseStock(
-        releaseItems,
-        `cancel-${order.orderNumber || order._id}`
-      );
-
-      if (!releaseResult.ok) {
-        return res.status(409).json({
-          message: releaseResult.message || "Unable to release stock for cancellation",
-          unavailable: releaseResult.unavailable || [],
-        });
-      }
-    } catch (error) {
-      return res.status(502).json({
-        message: "Unable to cancel order right now. Please retry.",
-        details: error.message,
+  try {
+    const releaseResult = await releaseOrderInventoryIfNeeded(
+      order,
+      `cancel-${order.orderNumber || order._id}`
+    );
+    if (!releaseResult.ok) {
+      return res.status(409).json({
+        message: releaseResult.message,
+        unavailable: releaseResult.unavailable,
       });
     }
-
-    order.inventoryStatus = "released";
+  } catch (error) {
+    return res.status(502).json({
+      message: "Unable to cancel order right now. Please retry.",
+      details: error.message,
+    });
   }
 
   const previousStatus = order.status;
@@ -708,6 +724,75 @@ exports.getOrderById = async (req, res) => {
   return res.status(200).json({ order: formatOrder(order) });
 };
 
+exports.getSupplierOrdersInternal = async (req, res) => {
+  const supplierId = String(req.params.supplierId || "").trim();
+  if (!supplierId) {
+    return res.status(400).json({ message: "supplierId is required" });
+  }
+
+  const orders = await Order.find({ status: { $ne: "cancelled" } })
+    .sort({ createdAt: -1 })
+    .limit(500);
+
+  const medicineSupplierCache = new Map();
+  const rows = [];
+
+  for (const order of orders) {
+    const medicines = [];
+
+    for (const item of order.items || []) {
+      let itemSupplierId = String(item.supplierId || "").trim();
+
+      if (!itemSupplierId) {
+        const medId = String(item.medicineId || "").trim();
+        if (medId) {
+          if (!medicineSupplierCache.has(medId)) {
+            try {
+              const medicine = await inventoryClient.getMedicineById(medId);
+              medicineSupplierCache.set(medId, String(medicine?.supplierId || ""));
+            } catch (_error) {
+              medicineSupplierCache.set(medId, "");
+            }
+          }
+          itemSupplierId = String(medicineSupplierCache.get(medId) || "").trim();
+        }
+      }
+
+      if (itemSupplierId !== supplierId) {
+        continue;
+      }
+
+      medicines.push({
+        name: item.medicineName,
+        quantity: item.quantity,
+        price: item.unitPrice,
+        supplierId: itemSupplierId,
+      });
+    }
+
+    if (!medicines.length) {
+      continue;
+    }
+
+    const supplierTotal = Number(
+      medicines.reduce((sum, med) => sum + Number(med.quantity || 0) * Number(med.price || 0), 0).toFixed(2)
+    );
+
+    rows.push({
+      _id: order._id,
+      orderNumber: order.orderNumber,
+      customerName: order.userId,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      supplierTotal,
+      medicines,
+      createdAt: order.createdAt,
+    });
+  }
+
+  return res.status(200).json(rows);
+};
+
 exports.updateOrderStatus = async (req, res) => {
   const nextStatus = String(req.body.status || "").trim();
   const note = String(req.body.note || "").trim();
@@ -726,6 +811,26 @@ exports.updateOrderStatus = async (req, res) => {
   const previousStatus = order.status;
   if (previousStatus === nextStatus) {
     return res.status(200).json({ order: formatOrder(order) });
+  }
+
+  if (nextStatus === "cancelled") {
+    try {
+      const releaseResult = await releaseOrderInventoryIfNeeded(
+        order,
+        `cancel-${order.orderNumber || order._id}`
+      );
+      if (!releaseResult.ok) {
+        return res.status(409).json({
+          message: releaseResult.message,
+          unavailable: releaseResult.unavailable,
+        });
+      }
+    } catch (error) {
+      return res.status(502).json({
+        message: "Unable to cancel order right now. Please retry.",
+        details: error.message,
+      });
+    }
   }
 
   order.status = nextStatus;
