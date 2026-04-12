@@ -726,6 +726,7 @@ exports.getOrderById = async (req, res) => {
 
 exports.getSupplierOrdersInternal = async (req, res) => {
   const supplierId = String(req.params.supplierId || "").trim();
+  console.log(supplierId);
   if (!supplierId) {
     return res.status(400).json({ message: "supplierId is required" });
   }

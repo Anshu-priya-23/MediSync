@@ -88,10 +88,10 @@ const DashboardHome = () => {
           value={loading ? "..." : stats.totalBought}
           subtitle="Total Units"
         />
-        <StatCard
+        {/* <StatCard
           title="Total Returned"
           value={loading ? "..." : stats.totalReturned}
-        />
+        /> */}
         <StatCard
           title="Total Cancelled"
           value={loading ? "..." : stats.totalCancelled}
