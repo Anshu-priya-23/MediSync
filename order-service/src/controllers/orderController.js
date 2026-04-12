@@ -297,14 +297,10 @@ exports.getCart = async (req, res) => {
 
 exports.addToCart = async (req, res) => {
   const medicineId = String(req.body.medicineId || "").trim();
-   const supplierId = String(req.body.supplierId || "").trim();
   const requestedQty = Math.max(1, Math.floor(toNumber(req.body.quantity, 1)));
 
   if (!medicineId) {
     return res.status(400).json({ message: "medicineId is required" });
-  }
-  if (!supplierId) {
-    return res.status(400).json({ message: "supplierId is required" });
   }
 
   if (requestedQty > MAX_ITEM_QUANTITY) {
@@ -327,10 +323,13 @@ exports.addToCart = async (req, res) => {
     if (current) {
       current.quantity = Math.min(current.quantity + requestedQty, MAX_ITEM_QUANTITY);
       current.imageData = current.imageData || medicine.imageData || "";
+      // 🚀 THE FIX: Assign supplier ID dynamically
+      current.supplierId = medicine.supplierId || "UNKNOWN_SUPPLIER";
     } else {
       editableCart.items.push({
         medicineId,
-        supplierId,
+        // 🚀 THE FIX: Assign supplier ID dynamically
+        supplierId: medicine.supplierId || "UNKNOWN_SUPPLIER",
         medicineName: medicine.name,
         category: medicine.category || "General",
         imageData: medicine.imageData || "",
@@ -520,8 +519,12 @@ exports.checkout = async (req, res) => {
       order = await Order.create({
         orderNumber,
         userId,
+        // 🚀 THE FIX: Satisfies Mongoose Root Level validation
+        supplierId: cart.items[0]?.supplierId || "UNKNOWN_SUPPLIER", 
         items: cart.items.map((item) => ({
           medicineId: item.medicineId,
+          // 🚀 THE FIX: Satisfies Mongoose Item Level validation
+          supplierId: item.supplierId || "UNKNOWN_SUPPLIER", 
           medicineName: item.medicineName,
           category: item.category,
           imageData: item.imageData || "",
@@ -628,8 +631,6 @@ exports.cancelOrder = async (req, res) => {
       order: formatOrder(order),
     });
   }
-
-
 
   if (!USER_CANCELLABLE_STATUSES.includes(order.status)) {
     return res.status(409).json({
@@ -800,8 +801,6 @@ exports.updatePaymentStatusInternal = async (req, res) => {
   });
 };
 
-
-//added func
 exports.getAnalyticsOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
