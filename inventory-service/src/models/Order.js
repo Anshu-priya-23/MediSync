@@ -8,11 +8,15 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
-    medicines: [
+     medicines: [
       {
         name: String,
         quantity: Number,
         price: Number,
+        supplierId: {
+          type: mongoose.Schema.Types.Mixed,
+          default: null,
+        },
       },
     ],
 
