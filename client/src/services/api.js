@@ -1,13 +1,13 @@
 import axios from "axios";
 
-const API_BASE_URL = ("http://localhost:5004").replace(/\/+$/, "");
+const API_BASE_URL = ("http://localhost:5000").replace(/\/+$/, "");
 const INVENTORY_BASE_URL = (
   process.env.REACT_APP_INVENTORY_BASE_URL || process.env.REACT_APP_API_URL || "http://localhost:5002"
 ).replace(/\/+$/, "");
 
 // 🚀 ADDED: Dedicated Base URL for the Payment Service
 const PAYMENT_BASE_URL = (
-  process.env.REACT_APP_PAYMENT_BASE_URL || "http://localhost:5005"
+  process.env.REACT_APP_PAYMENT_BASE_URL || "http://localhost:5004"
 ).replace(/\/+$/, "");
 
 export const API_URL = `${INVENTORY_BASE_URL}/api`;

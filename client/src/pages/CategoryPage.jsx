@@ -24,27 +24,28 @@ const CategoryPage = () => {
         "respiratory-care": "Respiratory Care"
     };
 
-    const targetCategory = categoryMap[categoryName] || categoryName;
+const targetCategory = categoryMap[categoryName] || categoryName;
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                setLoading(true);
+useEffect(() => {
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
 
-                // --- USING THE SERVICE HERE ---
-                const data = await inventoryService.getProductsByCategory(targetCategory);
-                setDynamicProducts(data);
+            // ✅ FIXED HERE
+            const data = await inventoryService.getProductsByCategory(categoryName);
 
-            } catch (error) {
-                // You could set an error state here to show a message to the user
-                console.error("Failed to load products");
-            } finally {
-                setLoading(false);
-            }
-        };
+            setDynamicProducts(data);
 
-        fetchProducts();
-    }, [targetCategory]);
+        } catch (error) {
+            console.error("Failed to load products");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchProducts();
+}, [categoryName]);
+
     const displayTitle = targetCategory || categoryName.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 
     return (

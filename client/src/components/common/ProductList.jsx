@@ -55,7 +55,7 @@ const ProductList = ({ categoryTitle, products }) => {
                             <h4 className="product-name">{product.name}</h4>
 
                             <div className="product-bottom-row">
-                                <span className="product-price">${product.price.toFixed(2)}</span>
+                                <span className="product-price">Rs {product.price.toFixed(2)}</span>
 
                                 {/* We handle the button click separately with stopPropagation */}
                                 <button

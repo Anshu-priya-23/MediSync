@@ -347,13 +347,10 @@ exports.addToCart = async (req, res) => {
     if (current) {
       current.quantity = Math.min(current.quantity + requestedQty, MAX_ITEM_QUANTITY);
       current.imageData = current.imageData || medicine.imageData || "";
-      // 🚀 THE FIX: Assign supplier ID dynamically
-      current.supplierId = medicine.supplierId || "UNKNOWN_SUPPLIER";
+      current.supplierId = current.supplierId || String(medicine.supplierId || "");
     } else {
       editableCart.items.push({
         medicineId,
-        // 🚀 THE FIX: Assign supplier ID dynamically
-        supplierId: medicine.supplierId || "UNKNOWN_SUPPLIER",
         medicineName: medicine.name,
         category: medicine.category || "General",
         supplierId: String(medicine.supplierId || ""),
@@ -544,12 +541,8 @@ exports.checkout = async (req, res) => {
       order = await Order.create({
         orderNumber,
         userId,
-        // 🚀 THE FIX: Satisfies Mongoose Root Level validation
-        supplierId: cart.items[0]?.supplierId || "UNKNOWN_SUPPLIER", 
         items: cart.items.map((item) => ({
           medicineId: item.medicineId,
-          // 🚀 THE FIX: Satisfies Mongoose Item Level validation
-          supplierId: item.supplierId || "UNKNOWN_SUPPLIER", 
           medicineName: item.medicineName,
           category: item.category,
           supplierId: item.supplierId || "",
@@ -641,7 +634,7 @@ exports.getOrderHistory = async (req, res) => {
 };
 
 exports.cancelOrder = async (req, res) => {
-  const isPrivileged = ["admin", "pharmacist"].includes(req.user.role); 
+  const isPrivileged = ["admin", "pharmacist"].includes(req.user.role);
   const filter = isPrivileged
     ? { _id: req.params.orderId }
     : { _id: req.params.orderId, userId: req.user.userId };
@@ -726,12 +719,11 @@ exports.getOrderById = async (req, res) => {
 
 exports.getSupplierOrdersInternal = async (req, res) => {
   const supplierId = String(req.params.supplierId || "").trim();
-  console.log(supplierId);
   if (!supplierId) {
     return res.status(400).json({ message: "supplierId is required" });
   }
 
-  const orders = await Order.find({ status: { $ne: "cancelled" } })
+  const orders = await Order.find({})
     .sort({ createdAt: -1 })
     .limit(500);
 
@@ -905,15 +897,4 @@ exports.updatePaymentStatusInternal = async (req, res) => {
     message: "Payment status synced successfully",
     order: formatOrder(order),
   });
-};
-
-exports.getAnalyticsOrders = async (req, res) => {
-  try {
-    const orders = await Order.find({})
-      .sort({ createdAt: -1 });
-
-    res.json({ items: orders });
-  } catch {
-    res.json({ items: [] });
-  }
 };
