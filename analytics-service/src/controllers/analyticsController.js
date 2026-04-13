@@ -2,6 +2,19 @@ import axios from "axios";
 import { getDashboardData } from "../services/aggregationService.js";
 import Settings from "../models/settings.js";
 
+const SALES_STATUSES = new Set(["confirmed", "ready_for_pickup", "picked_up", "completed", "delivered"]);
+
+function isSalesOrder(order) {
+  const status = String(order?.status || "").trim().toLowerCase();
+  const paymentStatus = String(order?.paymentStatus || "").trim().toLowerCase();
+
+  if (status && SALES_STATUSES.has(status)) {
+    return true;
+  }
+
+  return paymentStatus === "paid";
+}
+
 // ================= DASHBOARD =================
 export const getDashboard = async (req, res) => {
   try {
@@ -37,14 +50,8 @@ export const getDashboard = async (req, res) => {
 
       const orders = orderRes.data?.items || [];
 
-      const validSalesStatuses = [
-        "confirmed",
-        "ready_for_pickup",
-        "picked_up"
-      ];
-
       orders.forEach(order => {
-        if (validSalesStatuses.includes(order.status)) {
+        if (isSalesOrder(order)) {
           totalSales += order.totalAmount || 0;
         }
       });
@@ -130,12 +137,6 @@ export const getReports = async (req, res) => {
     const weeklyMap = {};
     const monthlyMap = {};
 
-    const validSalesStatuses = [
-      "confirmed",
-      "ready_for_pickup",
-      "picked_up"
-    ];
-
     orders.forEach(order => {
       const amount = order.totalAmount || 0;
 
@@ -148,7 +149,7 @@ export const getReports = async (req, res) => {
       const date = new Date(rawDate);
       if (isNaN(date)) return;
 
-      if (validSalesStatuses.includes(order.status)) {
+      if (isSalesOrder(order)) {
         totalSales += amount;
 
         const dayKey = date.toISOString().split("T")[0];

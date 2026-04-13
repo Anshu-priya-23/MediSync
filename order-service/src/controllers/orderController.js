@@ -622,6 +622,16 @@ exports.checkout = async (req, res) => {
   }
 };
 
+exports.getAnalyticsOrders = async (_req, res) => {
+  const orders = await Order.find({})
+    .sort({ createdAt: -1 })
+    .limit(2000);
+
+  return res.status(200).json({
+    items: orders.map(formatOrder),
+  });
+};
+
 exports.getOrderHistory = async (req, res) => {
   const isPrivileged = ["admin", "pharmacist"].includes(req.user.role);
   const filter = isPrivileged ? {} : { userId: req.user.userId };

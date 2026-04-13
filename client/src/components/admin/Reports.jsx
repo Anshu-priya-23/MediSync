@@ -46,24 +46,6 @@ const Reports = () => {
   const weeklyData = data.weeklyData || [];
   const monthlyData = data.monthlyData || [];
 
-  // ✅ INSIGHTS
-  const lastSales = monthlyData[monthlyData.length - 1]?.value || 0;
-  const prevSales = monthlyData[monthlyData.length - 2]?.value || 0;
-
-  const salesInsight =
-    lastSales > prevSales
-      ? "📈 Sales increased"
-      : lastSales < prevSales
-      ? "📉 Sales decreased"
-      : "➖ No change in sales";
-
-  const ordersInsight =
-    data.totalOrders > data.totalCancelled
-      ? "📦 Orders increased"
-      : data.totalOrders < data.totalCancelled
-      ? "📉 Orders decreased"
-      : "➖ No change in orders";
-
   return (
     <div className="reports-page">
 
@@ -83,12 +65,6 @@ const Reports = () => {
           <p>Cancelled Orders</p>
           <h3 className="red">{data.totalCancelled || 0}</h3>
         </div>
-      </div>
-
-      {/* INSIGHTS */}
-      <div className="insights">
-        <div className="insight-box">{salesInsight}</div>
-        <div className="insight-box">{ordersInsight}</div>
       </div>
 
       {/* CHARTS */}
@@ -158,4 +134,4 @@ const Reports = () => {
   );
 };
 
-export default Reports
+export default Reports;
